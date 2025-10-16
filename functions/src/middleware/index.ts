@@ -1,7 +1,19 @@
-// Middleware exports - placeholder for authentication and validation middleware
+// Middleware exports
 
-// This file will be populated with actual middleware implementations in subsequent tasks
-// Temporarily commenting out exports until implementations are complete
-// export * from './auth';
+// Authentication middleware
+export {
+    authenticateToken,
+    requireAuth,
+    requireClient,
+    requireProvider,
+    requireUser,
+    optionalAuth,
+    RoleGuard,
+    requireOwnership,
+    authLogger,
+    authErrorHandler
+} from './auth';
+
+// Other middleware (to be implemented in subsequent tasks)
 // export * from './validation';
 // export * from './errorHandler';

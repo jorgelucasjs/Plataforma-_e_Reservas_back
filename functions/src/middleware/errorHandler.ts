@@ -2,7 +2,7 @@
 // This will be implemented in task 6.1
 
 import { Request, Response, NextFunction } from 'express';
-import { APIError, ErrorResponse } from '../types/responses';
+import { ErrorResponse } from '../types/responses';
 
 // Placeholder for global error handler middleware
 export const errorHandler = (

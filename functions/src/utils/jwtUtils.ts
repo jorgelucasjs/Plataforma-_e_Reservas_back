@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { AUTH_CONFIG } from '../config/authConfig';
 
 /**
@@ -48,8 +48,7 @@ export interface TokenVerificationResult {
 export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss'>): TokenResult {
   try {
     const tokenPayload: JWTPayload = {
-      ...payload,
-      iss: JWT_ISSUER
+      ...payload
     };
 
     // Use jwt.sign with separate parameters to avoid type issues
