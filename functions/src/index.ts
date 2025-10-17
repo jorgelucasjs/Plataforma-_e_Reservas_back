@@ -74,7 +74,12 @@ app.use((req: Request, res: Response, next: express.NextFunction) => {
   next();
 });
 
+// Import routes
+import { authRoutes, userRoutes } from './routes';
 
+// Mount routes
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 
 // Informações da API
 app.get("/info", (req: Request, res: Response) => {
@@ -83,7 +88,14 @@ app.get("/info", (req: Request, res: Response) => {
     message: "API RESTful para Plataforma de Reservas",
     version: "1.0.0",
     endpoints: {
-      
+      authentication: {
+        "POST /auth/register": "User registration",
+        "POST /auth/login": "User authentication"
+      },
+      users: {
+        "GET /users/profile": "Get current user profile (requires authentication)",
+        "GET /users/balance": "Get current user balance (requires authentication)"
+      }
     }
       
   });

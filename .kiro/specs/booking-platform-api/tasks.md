@@ -72,7 +72,11 @@
     - Build user profile retrieval and balance management methods
     - _Requirements: 1.1, 2.1, 9.1, 9.2_
   
-  - [ ] 3.3 Create user authentication routes
+  - [x] 3.3 Create user authentication routes
+
+
+
+
     - Implement POST /auth/register endpoint with validation
     - Create POST /auth/login endpoint with authentication
     - Add GET /users/profile and GET /users/balance endpoints

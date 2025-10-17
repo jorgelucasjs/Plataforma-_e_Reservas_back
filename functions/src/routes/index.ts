@@ -1,8 +1,9 @@
-// Route exports - placeholder for API route handlers
+// Route exports
 
-// This file will be populated with actual route implementations in subsequent tasks
-// Temporarily commenting out exports until implementations are complete
-// export * from './auth';
-// export * from './users';
+// Authentication and user management routes (implemented in task 3.3)
+export * from './auth';
+export * from './users';
+
+// Service and booking routes (to be implemented in subsequent tasks)
 // export * from './services';
 // export * from './bookings';
