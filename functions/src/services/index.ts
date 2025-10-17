@@ -1,7 +1,10 @@
-// Service layer exports - placeholder for business logic services
+// Service layer exports
 
-// This file will be populated with actual service implementations in subsequent tasks
-// Temporarily commenting out exports until implementations are complete
-// export * from './userService';
+// User service - implemented in task 3.2
+export * from './userService';
+
+// Service manager - placeholder for task 4.2
 // export * from './serviceManager';
+
+// Booking service - placeholder for task 5.3
 // export * from './bookingService';

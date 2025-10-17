@@ -44,13 +44,29 @@
     - _Requirements: 2.1, 8.1, 8.2_
 
 - [ ] 3. Implement user management system
-  - [ ] 3.1 Create user data models and validation
+
+  - [x] 3.1 Create user data models and validation
+
+
+
+
+
     - Implement User interface and validation schemas
     - Create user registration and login request/response types
     - Build email and NIF uniqueness validation functions
     - _Requirements: 1.1, 1.2, 1.3, 10.1_
   
-  - [ ] 3.2 Implement user service layer
+  - [x] 3.2 Implement user service layer
+
+
+
+
+
+
+
+
+
+
     - Create UserService class with registration functionality
     - Implement user authentication and JWT generation
     - Build user profile retrieval and balance management methods

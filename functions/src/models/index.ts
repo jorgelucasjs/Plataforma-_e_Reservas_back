@@ -1,17 +1,7 @@
 // Core data model interfaces for the booking platform
 
-export interface User {
-  id: string;
-  fullName: string;
-  nif: string;
-  email: string;
-  passwordHash: string;
-  userType: 'client' | 'provider';
-  balance: number;
-  createdAt: Date;
-  updatedAt: Date;
-  isActive: boolean;
-}
+// Re-export user models from dedicated user module
+export * from './user';
 
 export interface Service {
   id: string;
@@ -40,20 +30,7 @@ export interface Booking {
   cancellationReason?: string;
 }
 
-// Request/Response types for API endpoints
-export interface RegisterRequest {
-  fullName: string;
-  nif: string;
-  email: string;
-  password: string;
-  userType: 'client' | 'provider';
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
+// Service-related request/response types
 export interface CreateServiceRequest {
   name: string;
   description: string;
@@ -67,6 +44,7 @@ export interface UpdateServiceRequest {
   isActive?: boolean;
 }
 
+// Booking-related request/response types
 export interface CreateBookingRequest {
   serviceId: string;
 }
