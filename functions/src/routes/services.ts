@@ -3,8 +3,7 @@ import { ServiceManagerImpl } from '../services/serviceManager';
 import { CreateServiceRequest, UpdateServiceRequest, ServiceFilters } from '../models/service';
 import { AuthenticatedRequest } from '../types/auth';
 import { authenticateToken } from '../middleware/auth';
-import { ErrorResponse, ServiceResponse, ServicesListResponse } from '../types/responses';
-import { APIError } from '../types/responses';
+import { ErrorResponse, ServiceResponse, ServicesListResponse, APIError } from '../types/responses';
 
 const router = Router();
 const serviceManager = new ServiceManagerImpl();

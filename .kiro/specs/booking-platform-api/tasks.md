@@ -118,7 +118,12 @@
   
 
 
-  - [ ] 4.3 Create service management routes
+  - [x] 4.3 Create service management routes
+
+
+
+
+
     - Implement POST /services endpoint for service creation (providers only)
     - Create GET /services endpoint for listing all active services
     - Add GET /services/my endpoint for provider's services
