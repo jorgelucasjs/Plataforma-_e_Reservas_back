@@ -75,11 +75,12 @@ app.use((req: Request, res: Response, next: express.NextFunction) => {
 });
 
 // Import routes
-import { authRoutes, userRoutes } from './routes';
+import { authRoutes, userRoutes, serviceRoutes } from './routes';
 
 // Mount routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/services', serviceRoutes);
 
 // Informações da API
 app.get("/info", (req: Request, res: Response) => {
@@ -95,6 +96,13 @@ app.get("/info", (req: Request, res: Response) => {
       users: {
         "GET /users/profile": "Get current user profile (requires authentication)",
         "GET /users/balance": "Get current user balance (requires authentication)"
+      },
+      services: {
+        "POST /services": "Create service (providers only, requires authentication)",
+        "GET /services": "List all active services (public)",
+        "GET /services/my": "Get provider's services (providers only, requires authentication)",
+        "PUT /services/:id": "Update service (providers only, requires authentication)",
+        "DELETE /services/:id": "Delete service (providers only, requires authentication)"
       }
     }
       

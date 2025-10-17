@@ -3,17 +3,8 @@
 // Re-export user models from dedicated user module
 export * from './user';
 
-export interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  providerId: string;
-  providerName: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Re-export service models from dedicated service module
+export * from './service';
 
 export interface Booking {
   id: string;
@@ -30,19 +21,8 @@ export interface Booking {
   cancellationReason?: string;
 }
 
-// Service-related request/response types
-export interface CreateServiceRequest {
-  name: string;
-  description: string;
-  price: number;
-}
-
-export interface UpdateServiceRequest {
-  name?: string;
-  description?: string;
-  price?: number;
-  isActive?: boolean;
-}
+// Legacy service interfaces - these are now defined in ./service.ts
+// Keeping for backward compatibility, but prefer importing from ./service.ts
 
 // Booking-related request/response types
 export interface CreateBookingRequest {

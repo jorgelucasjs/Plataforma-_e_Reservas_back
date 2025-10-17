@@ -4,6 +4,8 @@
 export * from './auth';
 export * from './users';
 
-// Service and booking routes (to be implemented in subsequent tasks)
-// export * from './services';
+// Service routes (implemented in task 4.3)
+export * from './services';
+
+// Booking routes (to be implemented in subsequent tasks)
 // export * from './bookings';
