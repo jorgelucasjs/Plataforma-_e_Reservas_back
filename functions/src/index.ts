@@ -270,4 +270,4 @@ app.use(errorHandler);
 
 
 // Exportar função Firebase
-exports.agendaLaServer = onRequest(app);
+exports.sistemaDeReservaServer = onRequest(app);
