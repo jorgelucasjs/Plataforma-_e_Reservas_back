@@ -75,12 +75,13 @@ app.use((req: Request, res: Response, next: express.NextFunction) => {
 });
 
 // Import routes
-import { authRoutes, userRoutes, serviceRoutes } from './routes';
+import { authRoutes, userRoutes, serviceRoutes, bookingRoutes } from './routes';
 
 // Mount routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/services', serviceRoutes);
+app.use('/bookings', bookingRoutes);
 
 // Informações da API
 app.get("/info", (req: Request, res: Response) => {
@@ -103,6 +104,12 @@ app.get("/info", (req: Request, res: Response) => {
         "GET /services/my": "Get provider's services (providers only, requires authentication)",
         "PUT /services/:id": "Update service (providers only, requires authentication)",
         "DELETE /services/:id": "Delete service (providers only, requires authentication)"
+      },
+      bookings: {
+        "POST /bookings": "Create booking (clients only, requires authentication)",
+        "GET /bookings/my": "Get user's bookings (requires authentication)",
+        "PUT /bookings/:id/cancel": "Cancel booking (requires authentication)",
+        "GET /bookings/history": "Get booking history with filtering (requires authentication)"
       }
     }
       

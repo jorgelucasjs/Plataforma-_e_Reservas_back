@@ -136,26 +136,39 @@
   - Test service filtering and search functionality
   - _Requirements: 3.1, 3.2, 4.1_
 
-- [ ] 5. Implement booking system with balance management
-  - [ ] 5.1 Create booking data models
+- [x] 5. Implement booking system with balance management
+
+
+
+
+
+  - [x] 5.1 Create booking data models
+
+
     - Implement Booking interface and validation schemas
     - Create booking creation and cancellation request types
     - Build booking status and history tracking utilities
     - _Requirements: 5.1, 6.1, 7.1_
   
-  - [ ] 5.2 Implement atomic balance operations
+  - [x] 5.2 Implement atomic balance operations
+
+
     - Create transaction-based balance update functions
     - Implement balance verification and deduction logic
     - Build rollback mechanisms for failed transactions
     - _Requirements: 5.2, 5.3, 9.4, 9.5_
   
-  - [ ] 5.3 Implement booking service layer
+  - [x] 5.3 Implement booking service layer
+
+
     - Create BookingService class with booking creation logic
     - Implement booking cancellation with balance refunds
     - Build booking retrieval methods for clients and providers
     - _Requirements: 5.1, 5.2, 5.3, 6.1, 6.2_
   
-  - [ ] 5.4 Create booking management routes
+  - [x] 5.4 Create booking management routes
+
+
     - Implement POST /bookings endpoint with balance verification (clients only)
     - Create GET /bookings/my endpoint for user's bookings
     - Add PUT /bookings/:id/cancel endpoint for booking cancellation

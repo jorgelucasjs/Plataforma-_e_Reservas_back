@@ -6,5 +6,8 @@ export * from './userService';
 // Service manager - implemented in task 4.2
 export * from './serviceManager';
 
-// Booking service - placeholder for task 5.3
-// export * from './bookingService';
+// Balance service - implemented in task 5.2
+export * from './balanceService';
+
+// Booking service - implemented in task 5.3
+export * from './bookingService';

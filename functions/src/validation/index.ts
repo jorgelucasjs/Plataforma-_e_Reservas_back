@@ -2,3 +2,4 @@
 export * from './userValidation';
 export * from './uniquenessValidation';
 export * from './serviceValidation';
+export * from './bookingValidation';
