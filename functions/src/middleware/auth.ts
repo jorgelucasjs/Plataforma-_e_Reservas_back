@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwtUtils';
 import { UserType, UserContext, AuthMiddlewareOptions, AuthenticatedRequest } from '../types/auth';
+import { SecurityMonitor } from '../utils/monitoring';
 import * as admin from 'firebase-admin';
 
 /**
@@ -25,6 +26,15 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
       // If token is not provided and authentication is required
       if (!token) {
         if (required) {
+          // Log authentication failure using security monitor
+          SecurityMonitor.logAuthFailure(
+            'Authentication required but no token provided',
+            req.ip || 'unknown',
+            req.path,
+            req.method,
+            req.get('User-Agent')
+          );
+          
           return res.status(401).json({
             success: false,
             error: 'Authentication required',
@@ -38,6 +48,17 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
       const verification = verifyToken(token);
 
       if (!verification.isValid) {
+        // Log token verification failure using security monitor
+        SecurityMonitor.logAuthFailure(
+          'Token verification failed',
+          req.ip || 'unknown',
+          req.path,
+          req.method,
+          req.get('User-Agent'),
+          undefined,
+          { error: verification.error, tokenPresent: !!token }
+        );
+        
         return res.status(401).json({
           success: false,
           error: 'Invalid token',
@@ -58,6 +79,19 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
       const userDoc = await db.collection('users').doc(verification.payload.userId).get();
 
       if (!userDoc.exists) {
+        // Log user not found security event using security monitor
+        SecurityMonitor.logSuspiciousActivity(
+          'Token references non-existent user',
+          req.ip || 'unknown',
+          req.path,
+          req.method,
+          'high',
+          req.get('User-Agent'),
+          verification.payload.userId,
+          undefined,
+          { tokenUserId: verification.payload.userId }
+        );
+        
         return res.status(401).json({
           success: false,
           error: 'User not found',
@@ -67,6 +101,17 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
 
       const userData = userDoc.data();
       if (!userData?.isActive) {
+        // Log deactivated account access attempt using security monitor
+        SecurityMonitor.logAuthFailure(
+          'Deactivated account access attempt',
+          req.ip || 'unknown',
+          req.path,
+          req.method,
+          req.get('User-Agent'),
+          verification.payload.userId,
+          { email: verification.payload.email, userType: verification.payload.userType }
+        );
+        
         return res.status(401).json({
           success: false,
           error: 'Account deactivated',
@@ -85,12 +130,34 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
 
       // Check role-based access if roles are specified
       if (roles.length > 0 && !roles.includes(userContext.userType)) {
+        // Log authorization failure using security monitor
+        SecurityMonitor.logPermissionDenied(
+          'Insufficient permissions for role-based access',
+          userContext.userId,
+          userContext.userType,
+          req.ip || 'unknown',
+          req.path,
+          req.method,
+          req.get('User-Agent'),
+          { requiredRoles: roles, email: userContext.email }
+        );
+        
         return res.status(403).json({
           success: false,
           error: 'Insufficient permissions',
           message: `Access denied. Required roles: ${roles.join(', ')}`
         });
       }
+
+      // Log successful authentication using security monitor
+      SecurityMonitor.logAuthSuccess(
+        userContext.userId,
+        userContext.userType,
+        req.ip || 'unknown',
+        req.path,
+        req.method,
+        req.get('User-Agent')
+      );
 
       // Inject user context into request
       req.user = userContext;

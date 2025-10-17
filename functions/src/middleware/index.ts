@@ -14,6 +14,30 @@ export {
     authErrorHandler
 } from './auth';
 
-// Other middleware (to be implemented in subsequent tasks)
-// export * from './validation';
-// export * from './errorHandler';
+// Validation middleware
+export {
+    validateRequest,
+    validateUserRegistration,
+    validateUserLogin,
+    validateCreateService,
+    validateUpdateService,
+    validateServiceFilters,
+    validateCreateBooking,
+    validateCancelBooking,
+    validateBookingFilters,
+    sanitizeInput,
+    validateContentType,
+    validateRequestSize,
+    validateIdParam,
+    convertQueryParams
+} from './validation';
+
+// Error handling middleware
+export {
+    errorHandler,
+    notFoundHandler,
+    asyncHandler,
+    timeoutHandler,
+    securityErrorHandler,
+    logError
+} from './errorHandler';

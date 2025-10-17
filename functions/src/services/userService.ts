@@ -12,6 +12,7 @@ import { UserType } from '../types/auth';
 import { hashPassword, verifyPassword } from '../utils/passwordUtils';
 import { generateToken } from '../utils/jwtUtils';
 import { validateUserRegistrationComprehensive, validateUserLoginComprehensive } from '../utils/userValidationUtils';
+import { DatabaseMonitor } from '../utils/monitoring';
 
 /**
  * User Service Interface
@@ -101,12 +102,21 @@ export class UserServiceImpl implements UserService {
         updatedAt: now
       };
 
-      // Save to Firestore
-      await userDoc.set({
-        ...createUserData,
-        createdAt: admin.firestore.Timestamp.fromDate(now),
-        updatedAt: admin.firestore.Timestamp.fromDate(now)
-      });
+      // Save to Firestore with monitoring
+      await DatabaseMonitor.monitor(
+        'create',
+        'users',
+        userDoc.id,
+        async () => {
+          await userDoc.set({
+            ...createUserData,
+            createdAt: admin.firestore.Timestamp.fromDate(now),
+            updatedAt: admin.firestore.Timestamp.fromDate(now)
+          });
+        },
+        userRecord.id,
+        userRecord.userType
+      );
 
       // Generate JWT token
       const tokenResult = generateToken({
@@ -219,7 +229,13 @@ export class UserServiceImpl implements UserService {
    */
   async getUserById(userId: string): Promise<User | null> {
     try {
-      const userDoc = await this.usersCollection.doc(userId).get();
+      const userDoc = await DatabaseMonitor.monitor(
+        'read',
+        'users',
+        userId,
+        async () => await this.usersCollection.doc(userId).get(),
+        userId
+      );
       
       if (!userDoc.exists) {
         return null;

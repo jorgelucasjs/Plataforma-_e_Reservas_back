@@ -9,3 +9,6 @@ export * from './services';
 
 // Booking routes (implemented in task 5.4)
 export * from './bookings';
+
+// Admin routes (implemented in task 8.2)
+export * from './admin';
