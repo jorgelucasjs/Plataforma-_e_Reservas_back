@@ -233,8 +233,8 @@ export class BookingServiceImpl implements BookingService {
                     providerName: data.providerName,
                     amount: data.amount,
                     status: data.status,
-                    createdAt: data.createdAt || new Date(),
-                    cancelledAt: data.cancelledAt,
+                    createdAt: typeof data.createdAt === 'number' ? new Date(data.createdAt) : (data.createdAt || new Date()),
+                    cancelledAt: typeof data.cancelledAt === 'number' ? new Date(data.cancelledAt) : data.cancelledAt,
                     cancellationReason: data.cancellationReason
                 });
             });
@@ -271,8 +271,8 @@ export class BookingServiceImpl implements BookingService {
                     providerName: data.providerName,
                     amount: data.amount,
                     status: data.status,
-                    createdAt: data.createdAt || new Date(),
-                    cancelledAt: data.cancelledAt,
+                    createdAt: typeof data.createdAt === 'number' ? new Date(data.createdAt) : (data.createdAt || new Date()),
+                    cancelledAt: typeof data.cancelledAt === 'number' ? new Date(data.cancelledAt) : data.cancelledAt,
                     cancellationReason: data.cancellationReason
                 });
             });
@@ -311,8 +311,8 @@ export class BookingServiceImpl implements BookingService {
                 providerName: data.providerName,
                 amount: data.amount,
                 status: data.status,
-                createdAt: data.createdAt || new Date(),
-                cancelledAt: data.cancelledAt,
+                createdAt: typeof data.createdAt === 'number' ? new Date(data.createdAt) : (data.createdAt || new Date()),
+                cancelledAt: typeof data.cancelledAt === 'number' ? new Date(data.cancelledAt) : data.cancelledAt,
                 cancellationReason: data.cancellationReason
             };
 
@@ -349,11 +349,11 @@ export class BookingServiceImpl implements BookingService {
 
             // Apply date range filters
             if (filters?.startDate) {
-                query = query.where('createdAt', '>=', admin.firestore.Timestamp.fromMillis(filters.startDate.getTime()));
+                query = query.where('createdAt', '>=', filters.startDate.getTime());
             }
 
             if (filters?.endDate) {
-                query = query.where('createdAt', '<=', admin.firestore.Timestamp.fromMillis(filters.endDate.getTime()));
+                query = query.where('createdAt', '<=', filters.endDate.getTime());
             }
 
             // Apply sorting
@@ -386,8 +386,8 @@ export class BookingServiceImpl implements BookingService {
                     providerName: data.providerName,
                     amount: data.amount,
                     status: data.status,
-                    createdAt: data.createdAt || new Date(),
-                    cancelledAt: data.cancelledAt,
+                    createdAt: typeof data.createdAt === 'number' ? new Date(data.createdAt) : (data.createdAt || new Date()),
+                    cancelledAt: typeof data.cancelledAt === 'number' ? new Date(data.cancelledAt) : data.cancelledAt,
                     cancellationReason: data.cancellationReason
                 });
             });
