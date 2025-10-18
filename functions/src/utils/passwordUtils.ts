@@ -96,21 +96,21 @@ export function validatePassword(password: string): { isValid: boolean; errors: 
     errors.push('Password must be less than 128 characters long');
   }
   
-  if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
-  }
+  // if (!/[a-z]/.test(password)) {
+  //   errors.push('Password must contain at least one lowercase letter');
+  // }
   
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
-  }
+  // if (!/[A-Z]/.test(password)) {
+  //   errors.push('Password must contain at least one uppercase letter');
+  // }
   
-  if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one number');
-  }
+  // if (!/\d/.test(password)) {
+  //   errors.push('Password must contain at least one number');
+  // }
   
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    errors.push('Password must contain at least one special character');
-  }
+  // if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  //   errors.push('Password must contain at least one special character');
+  // }
   
   // Check for common weak passwords
   const commonPasswords = [

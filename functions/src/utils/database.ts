@@ -1,4 +1,4 @@
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';
 
 /**
@@ -150,7 +150,7 @@ export async function performDatabaseHealthCheck(): Promise<DatabaseHealthCheck>
   try {
     // Test Firestore connection
     await db.collection('_health_check').doc('test').set({
-      timestamp: FieldValue.serverTimestamp(),
+      timestamp: new Date().getTime(),
       test: true
     });
     
@@ -283,8 +283,8 @@ export async function initializeUserData(userId: string, userData: {
   const userDoc = {
     ...userData,
     balance: 0,
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
+    createdAt: new Date().getTime(),
+    updatedAt: new Date().getTime(),
     isActive: true
   };
 
@@ -318,7 +318,7 @@ export async function runMigration(migrationName: string, migrationFn: () => Pro
     
     // Mark migration as completed
     await migrationDoc.set({
-      completedAt: FieldValue.serverTimestamp(),
+      completedAt: new Date().getTime(),
       status: 'completed'
     });
 
@@ -333,7 +333,7 @@ export async function runMigration(migrationName: string, migrationFn: () => Pro
     
     // Mark migration as failed
     await migrationDoc.set({
-      failedAt: FieldValue.serverTimestamp(),
+      failedAt: new Date().getTime(),
       status: 'failed',
       error: String(error)
     });

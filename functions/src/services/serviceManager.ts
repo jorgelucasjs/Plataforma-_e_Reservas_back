@@ -123,8 +123,8 @@ export class ServiceManagerImpl implements ServiceManager {
       // Save to Firestore
       await serviceDoc.set({
         ...createServiceData,
-        createdAt: admin.firestore.Timestamp.fromDate(now),
-        updatedAt: admin.firestore.Timestamp.fromDate(now)
+        createdAt: new Date().getTime(),
+        updatedAt: new Date().getTime()
       });
 
       return serviceRecord;
@@ -163,8 +163,8 @@ export class ServiceManagerImpl implements ServiceManager {
           providerId: data.providerId,
           providerName: data.providerName,
           isActive: data.isActive,
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date()
+          createdAt: data.createdAt || new Date(),
+          updatedAt: data.updatedAt || new Date()
         });
       });
 
@@ -201,8 +201,8 @@ export class ServiceManagerImpl implements ServiceManager {
           providerId: data.providerId,
           providerName: data.providerName,
           isActive: data.isActive,
-          createdAt: data.createdAt?.toDate() || new Date(),
-          updatedAt: data.updatedAt?.toDate() || new Date()
+          createdAt: data.createdAt || new Date(),
+          updatedAt: data.updatedAt || new Date()
         });
       });
 
@@ -242,8 +242,8 @@ export class ServiceManagerImpl implements ServiceManager {
         providerId: data.providerId,
         providerName: data.providerName,
         isActive: data.isActive,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date()
+        createdAt: data.createdAt || new Date(),
+        updatedAt: data.updatedAt || new Date()
       };
 
     } catch (error) {
@@ -306,10 +306,8 @@ export class ServiceManagerImpl implements ServiceManager {
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
       );
 
-      // Convert Date to Timestamp for Firestore
-      if (cleanUpdateData.updatedAt) {
-        cleanUpdateData.updatedAt = admin.firestore.Timestamp.fromDate(cleanUpdateData.updatedAt as Date);
-      }
+      // Use server timestamp for updates
+      cleanUpdateData.updatedAt = new Date().getTime();
 
       // Update in Firestore
       await this.servicesCollection.doc(serviceId).update(cleanUpdateData);
@@ -427,8 +425,8 @@ export class ServiceManagerImpl implements ServiceManager {
             providerId: data.providerId,
             providerName: data.providerName,
             isActive: data.isActive,
-            createdAt: data.createdAt?.toDate() || new Date(),
-            updatedAt: data.updatedAt?.toDate() || new Date()
+            createdAt: data.createdAt || new Date(),
+            updatedAt: data.updatedAt || new Date()
           });
         });
       } else {

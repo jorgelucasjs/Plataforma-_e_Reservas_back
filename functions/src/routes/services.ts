@@ -159,7 +159,7 @@ router.get('/my', authenticateToken({ roles: ['provider'] }), async (req: Authen
  * PUT /services/:id - Update service (providers only)
  * Requirements: 3.1, 3.2, 8.2
  */
-router.put('/:id', authenticateToken({ roles: ['provider'] }), async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id', authenticateToken({ roles: ['provider'] }), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const serviceId = req.params.id;
     const updateData: UpdateServiceRequest = req.body;

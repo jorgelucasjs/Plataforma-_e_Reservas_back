@@ -111,13 +111,15 @@ export function validateUserRegistration(data: UserRegistrationRequest): Validat
       message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`,
       code: 'MIN_LENGTH'
     });
-  } else if (!PASSWORD_REGEX.test(data.password)) {
-    errors.push({
-      field: 'password',
-      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-      code: 'INVALID_FORMAT'
-    });
   }
+
+  // else if (!PASSWORD_REGEX.test(data.password)) {
+  //   errors.push({
+  //     field: 'password',
+  //     message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+  //     code: 'INVALID_FORMAT'
+  //   });
+  // }
 
   // Validate user type
   if (!data.userType || typeof data.userType !== 'string') {

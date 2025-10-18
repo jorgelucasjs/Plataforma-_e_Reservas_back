@@ -1,4 +1,10 @@
 import * as admin from 'firebase-admin';
+
+// Ensure Firebase Admin is initialized
+if (!admin.apps.length) {
+    admin.initializeApp();
+}
+
 import { BalanceTransaction } from '../models/booking';
 import { userService } from './userService';
 
@@ -166,7 +172,7 @@ export class BalanceServiceImpl implements BalanceService {
         // Update user balance
         transaction.update(userRef, {
           balance: newBalance,
-          updatedAt: admin.firestore.Timestamp.now()
+          updatedAt: new Date().getTime()
         });
 
         // Create balance transaction record
@@ -184,7 +190,7 @@ export class BalanceServiceImpl implements BalanceService {
 
         transaction.set(transactionDoc, {
           ...balanceTransaction,
-          timestamp: admin.firestore.Timestamp.fromDate(balanceTransaction.timestamp)
+          timestamp: new Date().getTime()
         });
 
         result = {
@@ -282,7 +288,7 @@ export class BalanceServiceImpl implements BalanceService {
           // Update user balance
           transaction.update(change.userRef, {
             balance: change.newBalance,
-            updatedAt: admin.firestore.Timestamp.now()
+            updatedAt: new Date().getTime()
           });
 
           // Create balance transaction record
@@ -300,7 +306,7 @@ export class BalanceServiceImpl implements BalanceService {
 
           transaction.set(transactionDoc, {
             ...balanceTransaction,
-            timestamp: admin.firestore.Timestamp.fromDate(balanceTransaction.timestamp)
+            timestamp: new Date().getTime()
           });
 
           results.push({
