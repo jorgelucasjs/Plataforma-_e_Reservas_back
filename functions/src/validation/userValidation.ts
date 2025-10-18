@@ -2,7 +2,7 @@ import { UserRegistrationRequest, UserLoginRequest } from '../models/user';
 import { UserType } from '../types/auth';
 
 /**
- * Validation result interface
+ * Interface de resultado de validação
  */
 export interface ValidationResult {
   isValid: boolean;
@@ -10,7 +10,7 @@ export interface ValidationResult {
 }
 
 /**
- * Individual validation error
+ * Erro individual de validação
  */
 export interface ValidationError {
   field: string;
@@ -19,29 +19,29 @@ export interface ValidationError {
 }
 
 /**
- * Email validation regex pattern
+ * Padrão regex de validação de email
  */
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * NIF validation regex pattern (Portuguese tax identification number)
- * Accepts 9 digits
+ * Padrão regex de validação de NIF (número de identificação fiscal português)
+ * Aceita 9 dígitos
  */
 const NIF_REGEX = /^\d{9}$/;
 
 /**
- * Password validation requirements
+ * Requisitos de validação de senha
  */
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 
 /**
- * Validate user registration data
+ * Validar dados de registro de usuário
  */
 export function validateUserRegistration(data: UserRegistrationRequest): ValidationResult {
   const errors: ValidationError[] = [];
 
-  // Validate full name
+  // Validar nome completo
   if (!data.fullName || typeof data.fullName !== 'string') {
     errors.push({
       field: 'fullName',
@@ -62,7 +62,7 @@ export function validateUserRegistration(data: UserRegistrationRequest): Validat
     });
   }
 
-  // Validate NIF
+  // Validar NIF
   if (!data.nif || typeof data.nif !== 'string') {
     errors.push({
       field: 'nif',
@@ -121,7 +121,7 @@ export function validateUserRegistration(data: UserRegistrationRequest): Validat
   //   });
   // }
 
-  // Validate user type
+  // Validar tipo de usuário
   if (!data.userType || typeof data.userType !== 'string') {
     errors.push({
       field: 'userType',
@@ -143,7 +143,7 @@ export function validateUserRegistration(data: UserRegistrationRequest): Validat
 }
 
 /**
- * Validate user login data
+ * Validar dados de login de usuário
  */
 export function validateUserLogin(data: UserLoginRequest): ValidationResult {
   const errors: ValidationError[] = [];

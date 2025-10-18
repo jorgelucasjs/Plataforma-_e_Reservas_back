@@ -1,7 +1,7 @@
 import { UserType } from '../types/auth';
 
 /**
- * Core User interface representing the user document in Firestore
+ * Interface principal do Usuário representando o documento do usuário no Firestore
  */
 export interface User {
   id: string;
@@ -17,7 +17,7 @@ export interface User {
 }
 
 /**
- * User creation data (without generated fields)
+ * Dados de criação do usuário (sem campos gerados)
  */
 export interface CreateUserData {
   fullName: string;
@@ -30,7 +30,7 @@ export interface CreateUserData {
 }
 
 /**
- * User update data (partial fields that can be updated)
+ * Dados de atualização do usuário (campos parciais que podem ser atualizados)
  */
 export interface UpdateUserData {
   fullName?: string;
@@ -42,7 +42,7 @@ export interface UpdateUserData {
 }
 
 /**
- * User data for public responses (without sensitive information)
+ * Dados do usuário para respostas públicas (sem informações sensíveis)
  */
 export interface PublicUserData {
   id: string;
@@ -55,7 +55,7 @@ export interface PublicUserData {
 }
 
 /**
- * User registration request interface
+ * Interface de requisição de registro de usuário
  */
 export interface UserRegistrationRequest {
   fullName: string;
@@ -66,7 +66,7 @@ export interface UserRegistrationRequest {
 }
 
 /**
- * User login request interface
+ * Interface de requisição de login de usuário
  */
 export interface UserLoginRequest {
   email: string;
@@ -74,7 +74,7 @@ export interface UserLoginRequest {
 }
 
 /**
- * User registration response interface
+ * Interface de resposta de registro de usuário
  */
 export interface UserRegistrationResponse {
   success: boolean;
@@ -88,7 +88,7 @@ export interface UserRegistrationResponse {
 }
 
 /**
- * User login response interface
+ * Interface de resposta de login de usuário
  */
 export interface UserLoginResponse {
   success: boolean;
@@ -102,7 +102,7 @@ export interface UserLoginResponse {
 }
 
 /**
- * Balance update operation interface
+ * Interface de operação de atualização de saldo
  */
 export interface BalanceUpdateOperation {
   userId: string;

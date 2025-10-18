@@ -1,11 +1,11 @@
 /**
- * Service data models, validation schemas, and utilities
- * This module contains all service-related interfaces, validation functions,
- * and filtering utilities for the booking platform API.
+ * Modelos de dados de serviço, esquemas de validação e utilitários
+ * Este módulo contém todas as interfaces relacionadas a serviços, funções de validação,
+ * e utilitários de filtragem para a API da plataforma de reservas.
  */
 
 /**
- * Core Service interface representing the service document in Firestore
+ * Interface principal do Serviço representando o documento do serviço no Firestore
  */
 export interface Service {
   id: string;
@@ -20,7 +20,7 @@ export interface Service {
 }
 
 /**
- * Service creation data (without generated fields)
+ * Dados de criação do serviço (sem campos gerados)
  */
 export interface CreateServiceData {
   name: string;
@@ -32,7 +32,7 @@ export interface CreateServiceData {
 }
 
 /**
- * Service update data (partial fields that can be updated)
+ * Dados de atualização do serviço (campos parciais que podem ser atualizados)
  */
 export interface UpdateServiceData {
   name?: string;
@@ -43,7 +43,7 @@ export interface UpdateServiceData {
 }
 
 /**
- * Service creation request interface (from API)
+ * Interface de requisição de criação de serviço (da API)
  */
 export interface CreateServiceRequest {
   name: string;
@@ -52,7 +52,7 @@ export interface CreateServiceRequest {
 }
 
 /**
- * Service update request interface (from API)
+ * Interface de requisição de atualização de serviço (da API)
  */
 export interface UpdateServiceRequest {
   name?: string;
@@ -62,14 +62,14 @@ export interface UpdateServiceRequest {
 }
 
 /**
- * Service filtering options for search and listing
+ * Opções de filtragem de serviços para busca e listagem
  */
 export interface ServiceFilters {
   providerId?: string;
   isActive?: boolean;
   minPrice?: number;
   maxPrice?: number;
-  searchTerm?: string; // Search in name and description
+  searchTerm?: string; // Buscar em nome e descrição
   sortBy?: 'name' | 'price' | 'createdAt' | 'updatedAt';
   sortOrder?: 'asc' | 'desc';
   limit?: number;
@@ -77,7 +77,7 @@ export interface ServiceFilters {
 }
 
 /**
- * Service search result interface
+ * Interface de resultado de busca de serviços
  */
 export interface ServiceSearchResult {
   services: Service[];
@@ -87,7 +87,7 @@ export interface ServiceSearchResult {
 }
 
 /**
- * Service validation result interface
+ * Interface de resultado de validação de serviço
  */
 export interface ServiceValidationResult {
   isValid: boolean;
@@ -95,7 +95,7 @@ export interface ServiceValidationResult {
 }
 
 /**
- * Individual service validation error
+ * Erro individual de validação de serviço
  */
 export interface ServiceValidationError {
   field: string;
@@ -104,7 +104,7 @@ export interface ServiceValidationError {
 }
 
 /**
- * Service statistics interface (for providers)
+ * Interface de estatísticas de serviço (para provedores)
  */
 export interface ServiceStats {
   serviceId: string;
@@ -116,7 +116,7 @@ export interface ServiceStats {
 }
 
 /**
- * Service with booking count (for listing with popularity)
+ * Serviço com contagem de reservas (para listagem com popularidade)
  */
 export interface ServiceWithStats extends Service {
   bookingCount: number;

@@ -2,16 +2,16 @@ import * as jwt from 'jsonwebtoken';
 import { AUTH_CONFIG } from '../config/authConfig';
 
 /**
- * JWT Token Management Utilities
+ * Utilitários de Gerenciamento de Token JWT
  */
 
-// JWT Configuration from config
+// Configuração JWT da config
 const JWT_SECRET = AUTH_CONFIG.jwt.secret;
 const JWT_EXPIRES_IN = AUTH_CONFIG.jwt.expiresIn;
 const JWT_ISSUER = AUTH_CONFIG.jwt.issuer;
 
 /**
- * JWT Payload interface
+ * Interface de Payload JWT
  */
 export interface JWTPayload {
   userId: string;
@@ -23,7 +23,7 @@ export interface JWTPayload {
 }
 
 /**
- * Token generation result interface
+ * Interface de resultado de geração de token
  */
 export interface TokenResult {
   token: string;
@@ -32,7 +32,7 @@ export interface TokenResult {
 }
 
 /**
- * Token verification result interface
+ * Interface de resultado de verificação de token
  */
 export interface TokenVerificationResult {
   isValid: boolean;
@@ -41,9 +41,9 @@ export interface TokenVerificationResult {
 }
 
 /**
- * Generate a JWT token for a user
- * @param payload - User data to include in the token
- * @returns TokenResult - Generated token with metadata
+ * Gerar um token JWT para um usuário
+ * @param payload - Dados do usuário para incluir no token
+ * @returns TokenResult - Token gerado com metadados
  */
 export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss'>): TokenResult {
   try {
@@ -51,12 +51,12 @@ export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss'>):
       ...payload
     };
 
-    // Use jwt.sign with separate parameters to avoid type issues
+    // Usar jwt.sign com parâmetros separados para evitar problemas de tipo
     const token = jwt.sign(
       tokenPayload, 
       JWT_SECRET, 
       { 
-        expiresIn: '24h', // Use literal string to avoid type issues
+        expiresIn: '24h', // Usar string literal para evitar problemas de tipo
         issuer: JWT_ISSUER 
       }
     );
@@ -72,9 +72,9 @@ export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss'>):
 }
 
 /**
- * Verify and decode a JWT token
- * @param token - JWT token to verify
- * @returns TokenVerificationResult - Verification result with payload or error
+ * Verificar e decodificar um token JWT
+ * @param token - Token JWT para verificar
+ * @returns TokenVerificationResult - Resultado da verificação com payload ou erro
  */
 export function verifyToken(token: string): TokenVerificationResult {
   try {
@@ -85,7 +85,7 @@ export function verifyToken(token: string): TokenVerificationResult {
       };
     }
 
-    // Remove 'Bearer ' prefix if present
+    // Remover prefixo 'Bearer ' se presente
     const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
 
     const decoded = jwt.verify(cleanToken, JWT_SECRET, {

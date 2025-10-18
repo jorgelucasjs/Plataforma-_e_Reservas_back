@@ -1,23 +1,23 @@
-// Configure environment variables
+// Configurar variáveis de ambiente
 import * as dotenv from "dotenv";
 dotenv.config();
 
-// Initialize Firebase Admin SDK
+// Inicializar Firebase Admin SDK
 import * as admin from "firebase-admin";
 
-// Initialize Firebase Admin only if not already initialized
+// Inicializar Firebase Admin apenas se ainda não foi inicializado
 if (!admin.apps.length) {
   admin.initializeApp();
 }
 
-// Imports
+// Importações
 import express, { Request, Response } from "express";
 import { onRequest } from "firebase-functions/v2/https";
 import cors from "cors";
 
 import { ALLOWED_ORIGINS, CORS_METHODS, CORS_HEADERS, CORS_MAX_AGE } from "./config/corsConfig";
 
-// Import middleware
+// Importar middleware
 import { 
   errorHandler, 
   notFoundHandler, 
@@ -30,25 +30,25 @@ import {
   validateRequestSize 
 } from './middleware/validation';
 
-// Import monitoring utilities
+// Importar utilitários de monitoramento
 import { createRequestMonitoringMiddleware } from './utils/monitoring';
 
-// Import routes
+// Importar rotas
 import { authRoutes, userRoutes, serviceRoutes, bookingRoutes } from './routes';
 import adminRoutes from './routes/admin';
 
-// Create Express application
+// Criar aplicação Express
 const app = express();
 
-// Security middleware - apply early
-app.use(timeoutHandler(30000)); // 30 second timeout
-app.use(validateRequestSize(1024 * 1024)); // 1MB request size limit
+// Middleware de segurança - aplicar cedo
+app.use(timeoutHandler(30000)); // Timeout de 30 segundos
+app.use(validateRequestSize(1024 * 1024)); // Limite de tamanho de requisição de 1MB
 app.use(securityErrorHandler);
 
-// CORS configuration
+// Configuração CORS
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests without origin (e.g., mobile apps, Postman)
+    // Permitir requisições sem origem (ex: aplicações móveis, Postman)
     if (!origin) return callback(null, true);
     
     if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
@@ -67,7 +67,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Additional middleware to ensure CORS headers on all responses
+// Middleware adicional para garantir cabeçalhos CORS em todas as respostas
 app.use((req: Request, res: Response, next: express.NextFunction) => {
   const origin = req.headers.origin;
   
@@ -80,7 +80,7 @@ app.use((req: Request, res: Response, next: express.NextFunction) => {
   res.setHeader('Access-Control-Allow-Headers', CORS_HEADERS.join(', '));
   res.setHeader('Access-Control-Max-Age', CORS_MAX_AGE.toString());
   
-  // Respond to OPTIONS requests (preflight)
+  // Responder a requisições OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -89,27 +89,27 @@ app.use((req: Request, res: Response, next: express.NextFunction) => {
   next();
 });
 
-// Body parsing middleware
+// Middleware de parsing do corpo da requisição
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Content-Type validation for POST/PUT requests
+// Validação de Content-Type para requisições POST/PUT
 app.use(validateContentType('application/json'));
 
-// Input sanitization middleware
+// Middleware de sanitização de entrada
 app.use(sanitizeInput);
 
-// Enhanced request monitoring middleware (task 7.3)
+// Middleware de monitoramento de requisições aprimorado (tarefa 7.3)
 app.use(createRequestMonitoringMiddleware());
 
-// Mount routes with proper middleware application
+// Montar rotas com aplicação adequada de middleware
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/services', serviceRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/admin', adminRoutes);
 
-// API information endpoint (enhanced for task 7.2)
+// Endpoint de informações da API (aprimorado para tarefa 7.2)
 app.get("/info", (req: Request, res: Response) => {
   res.json({
     success: true,
@@ -261,10 +261,10 @@ app.get("/info", (req: Request, res: Response) => {
   });
 });
 
-// 404 handler for unmatched routes
+// Manipulador 404 para rotas não encontradas
 app.use(notFoundHandler);
 
-// Global error handling middleware (must be last)
+// Middleware global de tratamento de erros (deve ser o último)
 app.use(errorHandler);
 
 

@@ -1,11 +1,11 @@
 /**
- * Booking data models, validation schemas, and utilities
- * This module contains all booking-related interfaces, validation functions,
- * and filtering utilities for the booking platform API.
+ * Modelos de dados de reserva, esquemas de validação e utilitários
+ * Este módulo contém todas as interfaces relacionadas a reservas, funções de validação,
+ * e utilitários de filtragem para a API da plataforma de reservas.
  */
 
 /**
- * Core Booking interface representing the booking document in Firestore
+ * Interface principal da Reserva representando o documento da reserva no Firestore
  */
 export interface Booking {
   id: string;
@@ -23,12 +23,12 @@ export interface Booking {
 }
 
 /**
- * Booking status enumeration
+ * Enumeração de status da reserva
  */
 export type BookingStatus = 'confirmed' | 'cancelled';
 
 /**
- * Booking creation data (without generated fields)
+ * Dados de criação da reserva (sem campos gerados)
  */
 export interface CreateBookingData {
   clientId: string;
@@ -42,21 +42,21 @@ export interface CreateBookingData {
 }
 
 /**
- * Booking creation request interface (from API)
+ * Interface de requisição de criação de reserva (da API)
  */
 export interface CreateBookingRequest {
   serviceId: string;
 }
 
 /**
- * Booking cancellation request interface (from API)
+ * Interface de requisição de cancelamento de reserva (da API)
  */
 export interface CancelBookingRequest {
   cancellationReason?: string;
 }
 
 /**
- * Booking update data (for cancellation)
+ * Dados de atualização da reserva (para cancelamento)
  */
 export interface UpdateBookingData {
   status?: BookingStatus;
@@ -65,7 +65,7 @@ export interface UpdateBookingData {
 }
 
 /**
- * Booking filtering options for search and history
+ * Opções de filtragem de reservas para busca e histórico
  */
 export interface BookingFilters {
   startDate?: Date;

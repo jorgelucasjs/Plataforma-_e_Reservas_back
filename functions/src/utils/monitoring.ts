@@ -1,4 +1,4 @@
-// Performance monitoring and logging utilities
+// Utilitários de monitoramento de performance e logging
 
 import * as functions from 'firebase-functions';
 
@@ -42,11 +42,11 @@ export interface SecurityEvent {
 }
 
 /**
- * Monitor database operations for performance tracking
+ * Monitorar operações de banco de dados para rastreamento de performance
  */
 export class DatabaseMonitor {
   /**
-   * Wrap a database operation with performance monitoring
+   * Envolver uma operação de banco de dados com monitoramento de performance
    */
   static async monitor<T>(
     operation: string,
@@ -74,12 +74,12 @@ export class DatabaseMonitor {
         userType
       };
       
-      // Log performance metrics
+      // Registrar métricas de performance
       if (duration > 1000) {
-        // Log slow operations as warnings
-        functions.logger.warn('Slow database operation detected', metrics);
+        // Registrar operações lentas como avisos
+        functions.logger.warn('Operação lenta de banco de dados detectada', metrics);
       } else {
-        functions.logger.info('Database operation completed', metrics);
+        functions.logger.info('Operação de banco de dados concluída', metrics);
       }
       
       return result;
@@ -107,11 +107,11 @@ export class DatabaseMonitor {
 }
 
 /**
- * Request performance monitoring
+ * Monitoramento de performance de requisições
  */
 export class RequestMonitor {
   /**
-   * Log request metrics
+   * Registrar métricas de requisição
    */
   static logRequest(metrics: RequestMetrics): void {
     if (metrics.statusCode >= 500) {
@@ -127,11 +127,11 @@ export class RequestMonitor {
 }
 
 /**
- * Security event monitoring
+ * Monitoramento de eventos de segurança
  */
 export class SecurityMonitor {
   /**
-   * Log security events
+   * Registrar eventos de segurança
    */
   static logSecurityEvent(event: SecurityEvent): void {
     const logLevel = event.severity === 'critical' || event.severity === 'high' ? 'error' : 
@@ -139,9 +139,9 @@ export class SecurityMonitor {
     
     functions.logger[logLevel](`[SECURITY] ${event.type.toUpperCase()}`, event);
     
-    // For critical events, also log to console for immediate visibility
+    // Para eventos críticos, também registrar no console para visibilidade imediata
     if (event.severity === 'critical') {
-      console.error(`[CRITICAL SECURITY EVENT] ${event.message}`, event);
+      console.error(`[EVENTO DE SEGURANÇA CRÍTICO] ${event.message}`, event);
     }
   }
   

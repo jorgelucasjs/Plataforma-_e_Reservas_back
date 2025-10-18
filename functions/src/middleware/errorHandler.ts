@@ -1,10 +1,10 @@
-// Global error handling middleware
+// Middleware global de tratamento de erros
 
 import { Request, Response, NextFunction } from 'express';
 import { ErrorResponse, APIError, ValidationAPIError, ErrorCodes } from '../types/responses';
 import * as functions from 'firebase-functions';
 
-// Enhanced error logging utility
+// Utilitário aprimorado de registro de erros
 export const logError = (error: Error, req: Request, context?: any): void => {
   const errorInfo = {
     message: error.message,
@@ -20,27 +20,27 @@ export const logError = (error: Error, req: Request, context?: any): void => {
     context
   };
 
-  // Use Firebase Functions logger for structured logging
+  // Usar logger do Firebase Functions para registro estruturado
   if (error instanceof APIError && error.statusCode < 500) {
-    // Client errors - log as warning
-    functions.logger.warn('Client error occurred', errorInfo);
+    // Erros do cliente - registrar como aviso
+    functions.logger.warn('Erro do cliente ocorreu', errorInfo);
   } else {
-    // Server errors - log as error
-    functions.logger.error('Server error occurred', errorInfo);
+    // Erros do servidor - registrar como erro
+    functions.logger.error('Erro do servidor ocorreu', errorInfo);
   }
 };
 
-// Global error handler middleware
+// Middleware global de tratamento de erros
 export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  // Log the error with context
+  // Registrar o erro com contexto
   logError(error, req);
 
-  // Handle different error types
+  // Lidar com diferentes tipos de erro
   if (error instanceof ValidationAPIError) {
     const errorResponse: ErrorResponse = {
       success: false,
@@ -65,31 +65,31 @@ export const errorHandler = (
     return;
   }
 
-  // Handle Firebase Admin SDK errors
+  // Lidar com erros do Firebase Admin SDK
   if (error.name === 'FirebaseError' || error.message.includes('firebase')) {
     const errorResponse: ErrorResponse = {
       success: false,
       error: 'Database Error',
-      message: 'A database operation failed',
+      message: 'Uma operação de banco de dados falhou',
       code: ErrorCodes.DATABASE_ERROR
     };
     res.status(500).json(errorResponse);
     return;
   }
 
-  // Handle JWT errors
+  // Lidar com erros JWT
   if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
     const errorResponse: ErrorResponse = {
       success: false,
       error: 'Authentication Error',
-      message: 'Invalid or expired token',
+      message: 'Token inválido ou expirado',
       code: ErrorCodes.AUTHENTICATION_ERROR
     };
     res.status(401).json(errorResponse);
     return;
   }
 
-  // Handle validation errors from express-validator or joi
+  // Lidar com erros de validação do express-validator ou joi
   if (error.name === 'ValidationError') {
     const errorResponse: ErrorResponse = {
       success: false,
@@ -101,39 +101,39 @@ export const errorHandler = (
     return;
   }
 
-  // Handle syntax errors (malformed JSON, etc.)
+  // Lidar com erros de sintaxe (JSON malformado, etc.)
   if (error instanceof SyntaxError && 'body' in error) {
     const errorResponse: ErrorResponse = {
       success: false,
       error: 'Bad Request',
-      message: 'Invalid JSON in request body',
+      message: 'JSON inválido no corpo da requisição',
       code: ErrorCodes.VALIDATION_ERROR
     };
     res.status(400).json(errorResponse);
     return;
   }
 
-  // Default error response for unhandled errors
+  // Resposta de erro padrão para erros não tratados
   const errorResponse: ErrorResponse = {
     success: false,
     error: 'Internal Server Error',
-    message: 'An unexpected error occurred',
+    message: 'Ocorreu um erro inesperado',
     code: ErrorCodes.INTERNAL_ERROR
   };
 
   res.status(500).json(errorResponse);
 };
 
-// 404 handler for unmatched routes
+// Manipulador 404 para rotas não encontradas
 export const notFoundHandler = (req: Request, res: Response): void => {
   const errorResponse: ErrorResponse = {
     success: false,
     error: 'Not Found',
-    message: `Route ${req.method} ${req.originalUrl} not found`,
+    message: `Rota ${req.method} ${req.originalUrl} não encontrada`,
     code: ErrorCodes.NOT_FOUND
   };
   
-  functions.logger.warn('Route not found', {
+  functions.logger.warn('Rota não encontrada', {
     method: req.method,
     url: req.originalUrl,
     timestamp: new Date().toISOString(),
@@ -144,26 +144,26 @@ export const notFoundHandler = (req: Request, res: Response): void => {
   res.status(404).json(errorResponse);
 };
 
-// Async error wrapper utility
+// Utilitário wrapper de erro assíncrono
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
 
-// Request timeout handler
+// Manipulador de timeout de requisição
 export const timeoutHandler = (timeoutMs: number = 30000) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const timeout = setTimeout(() => {
       const error = new APIError(
-        'Request timeout',
+        'Timeout da requisição',
         408,
         ErrorCodes.INTERNAL_ERROR
       );
       next(error);
     }, timeoutMs);
 
-    // Clear timeout when response finishes
+    // Limpar timeout quando a resposta terminar
     res.on('finish', () => clearTimeout(timeout));
     res.on('close', () => clearTimeout(timeout));
 
@@ -171,7 +171,7 @@ export const timeoutHandler = (timeoutMs: number = 30000) => {
   };
 };
 
-// Security error handler for rate limiting, etc.
+// Manipulador de erros de segurança para limitação de taxa, etc.
 export const securityErrorHandler = (error: any, req: Request, res: Response, next: NextFunction): void => {
   if (error.type === 'entity.too.large') {
     const errorResponse: ErrorResponse = {

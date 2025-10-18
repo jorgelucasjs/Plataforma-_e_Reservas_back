@@ -1,8 +1,8 @@
 import * as crypto from 'crypto';
 
 /**
- * Password hashing and validation utilities
- * Using crypto.pbkdf2 as a fallback until bcrypt can be installed
+ * Utilitários de hash e validação de senhas
+ * Usando crypto.pbkdf2 como alternativa até que bcrypt possa ser instalado
  */
 
 const SALT_LENGTH = 32;
@@ -11,23 +11,23 @@ const HASH_LENGTH = 64;
 const HASH_ALGORITHM = 'sha512';
 
 /**
- * Hash a password using PBKDF2
- * @param password - Plain text password to hash
- * @returns Promise<string> - Hashed password with salt
+ * Fazer hash de uma senha usando PBKDF2
+ * @param password - Senha em texto plano para fazer hash
+ * @returns Promise<string> - Senha com hash e salt
  */
 export async function hashPassword(password: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    // Generate a random salt
+    // Gerar um salt aleatório
     const salt = crypto.randomBytes(SALT_LENGTH).toString('hex');
     
-    // Hash the password with the salt
+    // Fazer hash da senha com o salt
     crypto.pbkdf2(password, salt, HASH_ITERATIONS, HASH_LENGTH, HASH_ALGORITHM, (err, derivedKey) => {
       if (err) {
         reject(err);
         return;
       }
       
-      // Combine salt and hash
+      // Combinar salt e hash
       const hash = derivedKey.toString('hex');
       const combined = `${salt}:${hash}`;
       resolve(combined);
@@ -36,15 +36,15 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /**
- * Verify a password against a hash
- * @param password - Plain text password to verify
- * @param hashedPassword - Stored hash with salt
- * @returns Promise<boolean> - True if password matches
+ * Verificar uma senha contra um hash
+ * @param password - Senha em texto plano para verificar
+ * @param hashedPassword - Hash armazenado com salt
+ * @returns Promise<boolean> - True se a senha corresponder
  */
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     try {
-      // Split the stored hash to get salt and hash
+      // Dividir o hash armazenado para obter salt e hash
       const [salt, hash] = hashedPassword.split(':');
       
       if (!salt || !hash) {
@@ -52,7 +52,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
         return;
       }
       
-      // Hash the provided password with the stored salt
+      // Fazer hash da senha fornecida com o salt armazenado
       crypto.pbkdf2(password, salt, HASH_ITERATIONS, HASH_LENGTH, HASH_ALGORITHM, (err, derivedKey) => {
         if (err) {
           reject(err);
@@ -61,7 +61,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
         
         const providedHash = derivedKey.toString('hex');
         
-        // Compare hashes using timing-safe comparison
+        // Comparar hashes usando comparação segura de tempo
         const isValid = crypto.timingSafeEqual(
           Buffer.from(hash, 'hex'),
           Buffer.from(providedHash, 'hex')
@@ -76,9 +76,9 @@ export async function verifyPassword(password: string, hashedPassword: string): 
 }
 
 /**
- * Validate password strength
- * @param password - Password to validate
- * @returns object with validation result and messages
+ * Validar força da senha
+ * @param password - Senha para validar
+ * @returns objeto com resultado da validação e mensagens
  */
 export function validatePassword(password: string): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -112,7 +112,7 @@ export function validatePassword(password: string): { isValid: boolean; errors: 
   //   errors.push('Password must contain at least one special character');
   // }
   
-  // Check for common weak passwords
+  // Verificar senhas fracas comuns
   const commonPasswords = [
     'password', '123456', '123456789', 'qwerty', 'abc123', 
     'password123', 'admin', 'letmein', 'welcome', '12345678'
@@ -129,9 +129,9 @@ export function validatePassword(password: string): { isValid: boolean; errors: 
 }
 
 /**
- * Generate a secure random password
- * @param length - Length of the password (default: 16)
- * @returns string - Generated password
+ * Gerar uma senha aleatória segura
+ * @param length - Comprimento da senha (padrão: 16)
+ * @returns string - Senha gerada
  */
 export function generateSecurePassword(length: number = 16): string {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';

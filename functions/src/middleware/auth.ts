@@ -5,30 +5,30 @@ import { SecurityMonitor } from '../utils/monitoring';
 import * as admin from 'firebase-admin';
 
 /**
- * Authentication middleware to validate JWT tokens and inject user context
+ * Middleware de autenticação para validar tokens JWT e injetar contexto do usuário
  */
 export function authenticateToken(options: AuthMiddlewareOptions = {}) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const { required = true, roles = [], skipRoutes = [] } = options;
 
-      // Skip authentication for specified routes
+      // Pular autenticação para rotas especificadas
       if (skipRoutes.some(route => req.path.includes(route))) {
         return next();
       }
 
-      // Get token from Authorization header
+      // Obter token do cabeçalho Authorization
       const authHeader = req.headers.authorization;
       const token = authHeader && authHeader.startsWith('Bearer ') 
         ? authHeader.slice(7) 
         : authHeader;
 
-      // If token is not provided and authentication is required
+      // Se o token não for fornecido e a autenticação for obrigatória
       if (!token) {
         if (required) {
-          // Log authentication failure using security monitor
+          // Registrar falha de autenticação usando monitor de segurança
           SecurityMonitor.logAuthFailure(
-            'Authentication required but no token provided',
+            'Autenticação obrigatória mas nenhum token fornecido',
             req.ip || 'unknown',
             req.path,
             req.method,
@@ -44,13 +44,13 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
         return next();
       }
 
-      // Verify the token
+      // Verificar o token
       const verification = verifyToken(token);
 
       if (!verification.isValid) {
-        // Log token verification failure using security monitor
+        // Registrar falha de verificação de token usando monitor de segurança
         SecurityMonitor.logAuthFailure(
-          'Token verification failed',
+          'Falha na verificação do token',
           req.ip || 'unknown',
           req.path,
           req.method,
@@ -74,14 +74,14 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
         });
       }
 
-      // Get user details from Firestore to ensure user still exists and is active
+      // Obter detalhes do usuário do Firestore para garantir que o usuário ainda existe e está ativo
       const db = admin.firestore();
       const userDoc = await db.collection('users').doc(verification.payload.userId).get();
 
       if (!userDoc.exists) {
-        // Log user not found security event using security monitor
+        // Registrar evento de segurança de usuário não encontrado usando monitor de segurança
         SecurityMonitor.logSuspiciousActivity(
-          'Token references non-existent user',
+          'Token referencia usuário inexistente',
           req.ip || 'unknown',
           req.path,
           req.method,
@@ -101,9 +101,9 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
 
       const userData = userDoc.data();
       if (!userData?.isActive) {
-        // Log deactivated account access attempt using security monitor
+        // Registrar tentativa de acesso de conta desativada usando monitor de segurança
         SecurityMonitor.logAuthFailure(
-          'Deactivated account access attempt',
+          'Tentativa de acesso de conta desativada',
           req.ip || 'unknown',
           req.path,
           req.method,
@@ -119,7 +119,7 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
         });
       }
 
-      // Create user context
+      // Criar contexto do usuário
       const userContext: UserContext = {
         userId: verification.payload.userId,
         email: verification.payload.email,
@@ -128,11 +128,11 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
         balance: userData.balance || 0
       };
 
-      // Check role-based access if roles are specified
+      // Verificar acesso baseado em função se funções forem especificadas
       if (roles.length > 0 && !roles.includes(userContext.userType)) {
-        // Log authorization failure using security monitor
+        // Registrar falha de autorização usando monitor de segurança
         SecurityMonitor.logPermissionDenied(
-          'Insufficient permissions for role-based access',
+          'Permissões insuficientes para acesso baseado em função',
           userContext.userId,
           userContext.userType,
           req.ip || 'unknown',
@@ -149,7 +149,7 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
         });
       }
 
-      // Log successful authentication using security monitor
+      // Registrar autenticação bem-sucedida usando monitor de segurança
       SecurityMonitor.logAuthSuccess(
         userContext.userId,
         userContext.userType,
@@ -159,7 +159,7 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
         req.get('User-Agent')
       );
 
-      // Inject user context into request
+      // Injetar contexto do usuário na requisição
       req.user = userContext;
       next();
 
@@ -175,12 +175,12 @@ export function authenticateToken(options: AuthMiddlewareOptions = {}) {
 }
 
 /**
- * Middleware to require authentication (shorthand for authenticateToken with required: true)
+ * Middleware para exigir autenticação (atalho para authenticateToken com required: true)
  */
 export const requireAuth = authenticateToken({ required: true });
 
 /**
- * Middleware to require client role
+ * Middleware para exigir função de cliente
  */
 export const requireClient = authenticateToken({ 
   required: true, 
@@ -188,7 +188,7 @@ export const requireClient = authenticateToken({
 });
 
 /**
- * Middleware to require provider role
+ * Middleware para exigir função de provedor
  */
 export const requireProvider = authenticateToken({ 
   required: true, 
@@ -196,7 +196,7 @@ export const requireProvider = authenticateToken({
 });
 
 /**
- * Middleware to require either client or provider role (any authenticated user)
+ * Middleware para exigir função de cliente ou provedor (qualquer usuário autenticado)
  */
 export const requireUser = authenticateToken({ 
   required: true, 
@@ -204,16 +204,16 @@ export const requireUser = authenticateToken({
 });
 
 /**
- * Optional authentication middleware (doesn't fail if no token provided)
+ * Middleware de autenticação opcional (não falha se nenhum token for fornecido)
  */
 export const optionalAuth = authenticateToken({ required: false });
 
 /**
- * Role-based access control helper
+ * Auxiliar de controle de acesso baseado em função
  */
 export class RoleGuard {
   /**
-   * Check if user has permission to perform an action
+   * Verificar se o usuário tem permissão para executar uma ação
    */
   static hasPermission(userType: UserType, action: string): boolean {
     const permissions: Record<UserType, Record<string, boolean>> = {
@@ -240,7 +240,7 @@ export class RoleGuard {
   }
 
   /**
-   * Middleware to check specific permissions
+   * Middleware para verificar permissões específicas
    */
   static requirePermission(action: string) {
     return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -266,7 +266,7 @@ export class RoleGuard {
 }
 
 /**
- * Middleware to verify resource ownership
+ * Middleware para verificar propriedade do recurso
  */
 export function requireOwnership(resourceIdParam: string = 'id', resourceCollection: string) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -275,7 +275,7 @@ export function requireOwnership(resourceIdParam: string = 'id', resourceCollect
         return res.status(401).json({
           success: false,
           error: 'Authentication required',
-          message: 'User context not found'
+          message: 'Contexto do usuário não encontrado'
         });
       }
 
@@ -284,11 +284,11 @@ export function requireOwnership(resourceIdParam: string = 'id', resourceCollect
         return res.status(400).json({
           success: false,
           error: 'Invalid request',
-          message: `Resource ID parameter '${resourceIdParam}' is required`
+          message: `Parâmetro de ID do recurso '${resourceIdParam}' é obrigatório`
         });
       }
 
-      // Get resource from Firestore
+      // Obter recurso do Firestore
       const db = admin.firestore();
       const resourceDoc = await db.collection(resourceCollection).doc(resourceId).get();
 
@@ -296,13 +296,13 @@ export function requireOwnership(resourceIdParam: string = 'id', resourceCollect
         return res.status(404).json({
           success: false,
           error: 'Resource not found',
-          message: `${resourceCollection} not found`
+          message: `${resourceCollection} não encontrado`
         });
       }
 
       const resourceData = resourceDoc.data();
       
-      // Check ownership based on resource type
+      // Verificar propriedade baseada no tipo de recurso
       let isOwner = false;
       if (resourceCollection === 'services') {
         isOwner = resourceData?.providerId === req.user.userId;
@@ -310,7 +310,7 @@ export function requireOwnership(resourceIdParam: string = 'id', resourceCollect
         isOwner = resourceData?.clientId === req.user.userId || 
                   resourceData?.providerId === req.user.userId;
       } else {
-        // Generic ownership check - look for userId, clientId, or providerId
+        // Verificação genérica de propriedade - procurar por userId, clientId, ou providerId
         isOwner = resourceData?.userId === req.user.userId ||
                   resourceData?.clientId === req.user.userId ||
                   resourceData?.providerId === req.user.userId;
@@ -338,7 +338,7 @@ export function requireOwnership(resourceIdParam: string = 'id', resourceCollect
 }
 
 /**
- * Middleware to log authentication events
+ * Middleware para registrar eventos de autenticação
  */
 export function authLogger(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const token = req.headers.authorization;
@@ -357,7 +357,7 @@ export function authLogger(req: AuthenticatedRequest, res: Response, next: NextF
 }
 
 /**
- * Error handler for authentication-related errors
+ * Manipulador de erros para erros relacionados à autenticação
  */
 export function authErrorHandler(error: any, req: Request, res: Response, next: NextFunction) {
   if (error.name === 'UnauthorizedError') {

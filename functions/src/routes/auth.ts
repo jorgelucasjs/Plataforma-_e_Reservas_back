@@ -6,14 +6,14 @@ import { ErrorResponse } from '../types/responses';
 const router = Router();
 
 /**
- * POST /auth/register - User registration
- * Requirement 1.1: User registration with validation
+ * POST /auth/register - Registro de usuário
+ * Requisito 1.1: Registro de usuário com validação
  */
 router.post('/register', async (req: Request, res: Response) => {
     try {
         const registrationData: UserRegistrationRequest = req.body;
 
-        // Validate required fields
+        // Validar campos obrigatórios
         if (!registrationData.fullName || !registrationData.nif || !registrationData.email ||
             !registrationData.password || !registrationData.userType) {
             const errorResponse: ErrorResponse = {
@@ -24,7 +24,7 @@ router.post('/register', async (req: Request, res: Response) => {
             return res.status(400).json(errorResponse);
         }
 
-        // Validate userType
+        // Validar userType
         if (!['client', 'provider'].includes(registrationData.userType)) {
             const errorResponse: ErrorResponse = {
                 success: false,
@@ -34,7 +34,7 @@ router.post('/register', async (req: Request, res: Response) => {
             return res.status(400).json(errorResponse);
         }
 
-        // Call user service to register user
+        // Chamar serviço de usuário para registrar usuário
         const result = await userService.register(registrationData);
 
         if (!result.success) {
@@ -43,7 +43,7 @@ router.post('/register', async (req: Request, res: Response) => {
             return res.status(statusCode).json(result);
         }
 
-        // Return success response
+        // Retornar resposta de sucesso
         return res.status(201).json(result);
 
     } catch (error) {
@@ -58,8 +58,8 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 /**
- * POST /auth/login - User authentication
- * Requirement 2.1: User authentication with JWT token generation
+ * POST /auth/login - Autenticação de usuário
+ * Requisito 2.1: Autenticação de usuário com geração de token JWT
  */
 router.post('/login', async (req: Request, res: Response) => {
     try {
