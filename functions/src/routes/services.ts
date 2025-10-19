@@ -5,6 +5,9 @@ import { AuthenticatedRequest } from '../types/auth';
 import { authenticateToken } from '../middleware/auth';
 import { ErrorResponse, ServiceResponse, ServicesListResponse, APIError } from '../types/responses';
 
+// ADDED import
+import * as admin from 'firebase-admin';
+
 const router = Router();
 const serviceManager = new ServiceManagerImpl();
 
@@ -316,6 +319,82 @@ router.get('/provider/:providerId', async (req: Request, res: Response) => {
       success: false,
       error: 'Internal Server Error',
       message: 'An unexpected error occurred while retrieving provider services'
+    };
+    return res.status(500).json(errorResponse);
+  }
+});
+
+/**
+ * GET /services/user-by-email?email=:email - Obter dados de usuário pelo email (inclui docID)
+ * Protegida: requer autenticação (client ou provider)
+ */
+router.get('/user-by-email', authenticateToken({ roles: ['client', 'provider'] }), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const email = (req.query.email as string) || '';
+
+    if (!email || email.trim().length === 0) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: 'Validation Error',
+        message: 'Email query parameter is required'
+      };
+      return res.status(400).json(errorResponse);
+    }
+
+    // Buscar usuário por email no Firestore
+    const usersCollection = admin.firestore().collection('users');
+    const snapshot = await usersCollection.where('email', '==', email).limit(1).get();
+
+    if (snapshot.empty) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: 'Not Found',
+        message: `User with email ${email} not found`
+      };
+      return res.status(404).json(errorResponse);
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data() as any;
+
+    // Normalizar datas se forem timestamps numéricos
+    const userWithDocId = {
+      docID: doc.id,
+      id: data.id || doc.id,
+      fullName: data.fullName,
+      email: data.email,
+      nif: data.nif,
+      userType: data.userType,
+      isActive: data.isActive,
+      balance: typeof data.balance === 'number' ? data.balance : 0,
+      createdAt: typeof data.createdAt === 'number' ? new Date(data.createdAt) : (data.createdAt || null),
+      updatedAt: typeof data.updatedAt === 'number' ? new Date(data.updatedAt) : (data.updatedAt || null)
+      // ...inclua outros campos do usuário conforme necessário...
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: 'User retrieved successfully',
+      data: userWithDocId
+    });
+
+  } catch (error) {
+    console.error('Get user by email endpoint error:', error);
+
+    if (error instanceof APIError) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: error.code,
+        message: error.message,
+        details: error.details
+      };
+      return res.status(error.statusCode).json(errorResponse);
+    }
+
+    const errorResponse: ErrorResponse = {
+      success: false,
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred while retrieving user'
     };
     return res.status(500).json(errorResponse);
   }
