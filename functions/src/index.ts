@@ -46,12 +46,16 @@ app.use(validateRequestSize(1024 * 1024)); // Limite de tamanho de requisição 
 app.use(securityErrorHandler);
 
 // Configuração CORS
+const extraAllowedOrigins = [
+  'https://bulir-angola.web.app' // origem adicionada para permitir requests do frontend Bulir
+];
+
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     // Permitir requisições sem origem (ex: aplicações móveis, Postman)
     if (!origin) return callback(null, true);
     
-    if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+    if (ALLOWED_ORIGINS.indexOf(origin) !== -1 || extraAllowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
@@ -71,7 +75,7 @@ app.use(cors(corsOptions));
 app.use((req: Request, res: Response, next: express.NextFunction) => {
   const origin = req.headers.origin;
   
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (origin && (ALLOWED_ORIGINS.includes(origin) || extraAllowedOrigins.includes(origin))) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   
