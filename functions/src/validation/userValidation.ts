@@ -25,9 +25,9 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Padrão regex de validação de NIF (número de identificação fiscal português)
- * Aceita 9 dígitos
+ * Aceita no mínimo 10 dígitos
  */
-const NIF_REGEX = /^\d{9}$/;
+const NIF_REGEX = /^\d{10,}$/;
 
 /**
  * Requisitos de validação de senha

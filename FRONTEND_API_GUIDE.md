@@ -1,52 +1,33 @@
-# Guia da API para Programadores Front-end
+# Frontend API Guide - AgendaLa API
 
-## Visão Geral
+Este guia fornece todas as informações necessárias para que o desenvolvedor frontend consuma a API da plataforma AgendaLa, uma API RESTful para sistema de reservas de serviços.
 
-Esta API RESTful oferece um sistema completo de reservas com gestão de utilizadores, serviços e reservas. A API utiliza autenticação JWT e controlo de acesso baseado em funções (RBAC).
+## 📋 Visão Geral da API
 
-**URL Base**: `https://your-firebase-project.cloudfunctions.net/agendaLaServer`
-**Emulador Local**: `http://localhost:5002/agendaLaServer`
+- **Base URL**: `https://us-central1-angolaeventos-cd238.cloudfunctions.net/sistemaDeReservaServer`
+- **Autenticação**: JWT (JSON Web Tokens)
+- **Formato de Dados**: JSON
+- **Codificação**: UTF-8
+- **CORS**: Habilitado para domínios específicos
 
-## Autenticação
+## 🔐 Autenticação
 
-### Sistema de Tokens JWT
+### Registro de Usuário
 
-A API utiliza tokens JWT para autenticação. Após o login bem-sucedido, receberá um token que deve ser incluído no cabeçalho `Authorization` de todas as requisições protegidas.
+**Endpoint**: `POST /auth/register`
 
-```javascript
-// Exemplo de cabeçalho de autorização
-headers: {
-  'Authorization': `Bearer ${token}`,
-  'Content-Type': 'application/json'
-}
-```
-
-### Tipos de Utilizador
-
-- **client**: Pode criar reservas e gerir o seu perfil
-- **provider**: Pode criar serviços, gerir reservas recebidas e o seu perfil
-
-## Endpoints da API
-
-### 1. Autenticação (`/auth`)
-
-#### 1.1 Registo de Utilizador
-```http
-POST /auth/register
-```
-
-**Corpo da Requisição:**
+**Corpo da Requisição**:
 ```json
 {
   "fullName": "João Silva",
   "nif": "123456789",
-  "email": "joao@exemplo.com",
-  "password": "senha123",
+  "email": "joao.silva@email.com",
+  "password": "senhaSegura123",
   "userType": "client" // ou "provider"
 }
 ```
 
-**Resposta de Sucesso (201):**
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
@@ -57,63 +38,62 @@ POST /auth/register
     "user": {
       "id": "user123",
       "fullName": "João Silva",
-      "email": "joao@exemplo.com",
+      "email": "joao.silva@email.com",
       "userType": "client",
-      "balance": 100.00
+      "balance": 0
     }
   }
 }
 ```
 
-**Erros Comuns:**
-- `400`: Dados de validação inválidos
-- `409`: Email ou NIF já existem
+### Login
 
-#### 1.2 Login de Utilizador
-```http
-POST /auth/login
-```
+**Endpoint**: `POST /auth/login`
 
-**Corpo da Requisição:**
+**Corpo da Requisição**:
 ```json
 {
-  "email": "joao@exemplo.com",
-  "password": "senha123"
+  "email": "joao.silva@email.com",
+  "password": "senhaSegura123"
 }
 ```
 
-**Resposta de Sucesso (200):**
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
-  "message": "Authentication successful",
+  "message": "Login successful",
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "expiresIn": "24h",
     "user": {
       "id": "user123",
       "fullName": "João Silva",
-      "email": "joao@exemplo.com",
+      "email": "joao.silva@email.com",
       "userType": "client",
-      "balance": 100.00
+      "balance": 100.50
     }
   }
 }
 ```
 
-**Erros Comuns:**
-- `401`: Credenciais inválidas
-- `401`: Conta inativa
+### Como Usar o Token JWT
 
-### 2. Gestão de Utilizadores (`/users`)
+Após obter o token, inclua-o no header `Authorization` de todas as requisições autenticadas:
 
-#### 2.1 Obter Perfil do Utilizador
-```http
-GET /users/profile
-Authorization: Bearer {token}
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**Resposta de Sucesso (200):**
+## 👤 Endpoints de Usuário
+
+### Obter Perfil do Usuário
+
+**Endpoint**: `GET /users/profile`
+
+**Autenticação**: Necessária
+
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
@@ -121,50 +101,87 @@ Authorization: Bearer {token}
   "data": {
     "id": "user123",
     "fullName": "João Silva",
-    "email": "joao@exemplo.com",
+    "email": "joao.silva@email.com",
     "nif": "123456789",
     "userType": "client",
-    "balance": 100.00,
-    "createdAt": "2024-01-15T10:30:00Z",
+    "balance": 100.50,
+    "createdAt": "2024-01-15T10:30:00.000Z",
     "isActive": true
   }
 }
 ```
 
-#### 2.2 Obter Saldo do Utilizador
-```http
-GET /users/balance
-Authorization: Bearer {token}
-```
+### Obter Saldo do Usuário
 
-**Resposta de Sucesso (200):**
+**Endpoint**: `GET /users/balance`
+
+**Autenticação**: Necessária
+
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
   "message": "User balance retrieved successfully",
   "data": {
-    "balance": 100.00
+    "balance": 100.50
   }
 }
 ```
 
-### 3. Gestão de Serviços (`/services`)
+## 🛍️ Endpoints de Serviços
 
-#### 3.1 Listar Todos os Serviços Ativos
-```http
-GET /services?search=massage&minPrice=20&maxPrice=100&sortBy=price&sortOrder=asc&limit=10&offset=0
+### Criar Serviço (Apenas Providers)
+
+**Endpoint**: `POST /services`
+
+**Autenticação**: Necessária (Provider)
+
+**Corpo da Requisição**:
+```json
+{
+  "name": "Corte de Cabelo Masculino",
+  "description": "Corte moderno com acabamento profissional",
+  "price": 25.00
+}
 ```
 
-**Parâmetros de Query (opcionais):**
-- `search`: Termo de pesquisa (nome e descrição)
+**Resposta de Sucesso**:
+```json
+{
+  "success": true,
+  "message": "Service created successfully",
+  "data": {
+    "id": "service123",
+    "name": "Corte de Cabelo Masculino",
+    "description": "Corte moderno com acabamento profissional",
+    "price": 25.00,
+    "providerId": "provider456",
+    "providerName": "Barbearia Silva",
+    "isActive": true,
+    "createdAt": "2024-01-15T14:20:00.000Z",
+    "updatedAt": "2024-01-15T14:20:00.000Z"
+  }
+}
+```
+
+### Listar Serviços
+
+**Endpoint**: `GET /services`
+
+**Autenticação**: Não necessária
+
+**Parâmetros de Query** (opcionais):
+- `search`: Termo de busca (nome ou descrição)
 - `minPrice`: Preço mínimo
 - `maxPrice`: Preço máximo
-- `sortBy`: Campo de ordenação (`name`, `price`, `createdAt`, `updatedAt`)
-- `sortOrder`: Ordem (`asc`, `desc`)
-- `limit`: Número máximo de resultados
-- `offset`: Número de resultados a saltar
+- `sortBy`: Ordenação (name, price, createdAt, updatedAt)
+- `sortOrder`: Ordem (asc, desc)
+- `limit`: Limite de resultados
+- `offset`: Deslocamento para paginação
 
-**Resposta de Sucesso (200):**
+**Exemplo**: `GET /services?search=corte&minPrice=10&maxPrice=50&sortBy=price&sortOrder=asc&limit=20`
+
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
@@ -173,14 +190,14 @@ GET /services?search=massage&minPrice=20&maxPrice=100&sortBy=price&sortOrder=asc
     "services": [
       {
         "id": "service123",
-        "name": "Massagem Relaxante",
-        "description": "Massagem de corpo inteiro para relaxamento",
-        "price": 50.00,
-        "providerId": "provider123",
-        "providerName": "Maria Santos",
+        "name": "Corte de Cabelo Masculino",
+        "description": "Corte moderno com acabamento profissional",
+        "price": 25.00,
+        "providerId": "provider456",
+        "providerName": "Barbearia Silva",
         "isActive": true,
-        "createdAt": "2024-01-15T10:30:00Z",
-        "updatedAt": "2024-01-15T10:30:00Z"
+        "createdAt": "2024-01-15T14:20:00.000Z",
+        "updatedAt": "2024-01-15T14:20:00.000Z"
       }
     ],
     "total": 1
@@ -188,139 +205,85 @@ GET /services?search=massage&minPrice=20&maxPrice=100&sortBy=price&sortOrder=asc
 }
 ```
 
-#### 3.2 Criar Serviço (Apenas Providers)
-```http
-POST /services
-Authorization: Bearer {token}
-```
+### Listar Serviços do Provider
 
-**Corpo da Requisição:**
+**Endpoint**: `GET /services/my`
+
+**Autenticação**: Necessária (Provider)
+
+**Resposta**: Mesma estrutura do endpoint de listagem geral, mas apenas serviços do provider autenticado.
+
+### Atualizar Serviço
+
+**Endpoint**: `POST /services/{serviceId}`
+
+**Autenticação**: Necessária (Provider - dono do serviço)
+
+**Corpo da Requisição** (pelo menos um campo):
 ```json
 {
-  "name": "Massagem Relaxante",
-  "description": "Massagem de corpo inteiro para relaxamento",
-  "price": 50.00
-}
-```
-
-**Resposta de Sucesso (201):**
-```json
-{
-  "success": true,
-  "message": "Service created successfully",
-  "data": {
-    "id": "service123",
-    "name": "Massagem Relaxante",
-    "description": "Massagem de corpo inteiro para relaxamento",
-    "price": 50.00,
-    "providerId": "provider123",
-    "providerName": "Maria Santos",
-    "isActive": true,
-    "createdAt": "2024-01-15T10:30:00Z",
-    "updatedAt": "2024-01-15T10:30:00Z"
-  }
-}
-```
-
-#### 3.3 Obter Serviços do Provider
-```http
-GET /services/my
-Authorization: Bearer {token}
-```
-
-**Resposta de Sucesso (200):**
-```json
-{
-  "success": true,
-  "message": "Provider services retrieved successfully",
-  "data": {
-    "services": [
-      {
-        "id": "service123",
-        "name": "Massagem Relaxante",
-        "description": "Massagem de corpo inteiro para relaxamento",
-        "price": 50.00,
-        "providerId": "provider123",
-        "providerName": "Maria Santos",
-        "isActive": true,
-        "createdAt": "2024-01-15T10:30:00Z",
-        "updatedAt": "2024-01-15T10:30:00Z"
-      }
-    ],
-    "total": 1
-  }
-}
-```
-
-#### 3.4 Atualizar Serviço
-```http
-PUT /services/{serviceId}
-Authorization: Bearer {token}
-```
-
-**Corpo da Requisição:**
-```json
-{
-  "name": "Massagem Relaxante Premium",
-  "description": "Massagem de corpo inteiro com óleos essenciais",
-  "price": 60.00,
+  "name": "Corte de Cabelo Masculino Premium",
+  "price": 30.00,
   "isActive": true
 }
 ```
 
-#### 3.5 Eliminar Serviço
-```http
-DELETE /services/{serviceId}
-Authorization: Bearer {token}
+### Deletar Serviço
+
+**Endpoint**: `DELETE /services/{serviceId}`
+
+**Autenticação**: Necessária (Provider - dono do serviço)
+
+**Resposta de Sucesso**:
+```json
+{
+  "success": true,
+  "message": "Service deleted successfully"
+}
 ```
 
-### 4. Gestão de Reservas (`/bookings`)
+## 📅 Endpoints de Reservas
 
-#### 4.1 Criar Reserva (Apenas Clients)
-```http
-POST /bookings
-Authorization: Bearer {token}
-```
+### Criar Reserva (Apenas Clients)
 
-**Corpo da Requisição:**
+**Endpoint**: `POST /bookings`
+
+**Autenticação**: Necessária (Client)
+
+**Corpo da Requisição**:
 ```json
 {
   "serviceId": "service123"
 }
 ```
 
-**Resposta de Sucesso (201):**
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
   "message": "Booking created successfully",
   "data": {
     "id": "booking123",
-    "clientId": "client123",
+    "clientId": "client456",
     "clientName": "João Silva",
     "serviceId": "service123",
-    "serviceName": "Massagem Relaxante",
-    "providerId": "provider123",
-    "providerName": "Maria Santos",
-    "amount": 50.00,
+    "serviceName": "Corte de Cabelo Masculino",
+    "providerId": "provider789",
+    "providerName": "Barbearia Silva",
+    "amount": 25.00,
     "status": "confirmed",
-    "createdAt": "2024-01-15T10:30:00Z"
+    "createdAt": "2024-01-15T16:00:00.000Z"
   }
 }
 ```
 
-**Erros Comuns:**
-- `400`: Saldo insuficiente
-- `404`: Serviço não encontrado
-- `400`: Serviço inativo
+### Listar Minhas Reservas
 
-#### 4.2 Obter Reservas do Utilizador
-```http
-GET /bookings/my
-Authorization: Bearer {token}
-```
+**Endpoint**: `GET /bookings/my`
 
-**Resposta de Sucesso (200):**
+**Autenticação**: Necessária
+
+**Resposta de Sucesso**:
 ```json
 {
   "success": true,
@@ -329,15 +292,15 @@ Authorization: Bearer {token}
     "bookings": [
       {
         "id": "booking123",
-        "clientId": "client123",
+        "clientId": "client456",
         "clientName": "João Silva",
         "serviceId": "service123",
-        "serviceName": "Massagem Relaxante",
-        "providerId": "provider123",
-        "providerName": "Maria Santos",
-        "amount": 50.00,
+        "serviceName": "Corte de Cabelo Masculino",
+        "providerId": "provider789",
+        "providerName": "Barbearia Silva",
+        "amount": 25.00,
         "status": "confirmed",
-        "createdAt": "2024-01-15T10:30:00Z"
+        "createdAt": "2024-01-15T16:00:00.000Z"
       }
     ],
     "count": 1,
@@ -346,422 +309,167 @@ Authorization: Bearer {token}
 }
 ```
 
-#### 4.3 Cancelar Reserva
-```http
-PUT /bookings/{bookingId}/cancel
-Authorization: Bearer {token}
-```
+### Cancelar Reserva
 
-**Corpo da Requisição (opcional):**
+**Endpoint**: `PUT /bookings/{bookingId}/cancel`
+
+**Autenticação**: Necessária (Client dono da reserva ou Provider dono do serviço)
+
+**Corpo da Requisição** (opcional):
 ```json
 {
-  "cancellationReason": "Conflito de horário"
+  "cancellationReason": "Cliente não pode comparecer"
 }
 ```
 
-**Resposta de Sucesso (200):**
-```json
-{
-  "success": true,
-  "message": "Booking cancelled successfully",
-  "data": {
-    "id": "booking123",
-    "clientId": "client123",
-    "clientName": "João Silva",
-    "serviceId": "service123",
-    "serviceName": "Massagem Relaxante",
-    "providerId": "provider123",
-    "providerName": "Maria Santos",
-    "amount": 50.00,
-    "status": "cancelled",
-    "createdAt": "2024-01-15T10:30:00Z",
-    "cancelledAt": "2024-01-15T11:00:00Z",
-    "cancellationReason": "Conflito de horário"
-  }
-}
-```
+### Histórico de Reservas
 
-#### 4.4 Histórico de Reservas com Filtros
-```http
-GET /bookings/history?startDate=2024-01-01&endDate=2024-01-31&status=confirmed&minAmount=20&maxAmount=100&serviceId=service123&sortBy=createdAt&sortOrder=desc&limit=10&offset=0
-Authorization: Bearer {token}
-```
+**Endpoint**: `GET /bookings/history`
 
-**Parâmetros de Query (opcionais):**
-- `startDate`: Data de início (ISO 8601)
-- `endDate`: Data de fim (ISO 8601)
-- `status`: Estado da reserva (`confirmed`, `cancelled`)
+**Autenticação**: Necessária
+
+**Parâmetros de Query** (opcionais):
+- `startDate`: Data inicial (ISO 8601)
+- `endDate`: Data final (ISO 8601)
+- `status`: Status (confirmed, cancelled)
 - `minAmount`: Valor mínimo
 - `maxAmount`: Valor máximo
-- `serviceId`: ID do serviço específico
-- `sortBy`: Campo de ordenação (`createdAt`, `amount`, `status`)
-- `sortOrder`: Ordem (`asc`, `desc`)
-- `limit`: Número máximo de resultados
-- `offset`: Número de resultados a saltar
+- `serviceId`: ID do serviço
+- `sortBy`: Ordenação (createdAt, amount, status)
+- `sortOrder`: Ordem (asc, desc)
+- `limit`: Limite
+- `offset`: Deslocamento
 
-**Resposta de Sucesso (200):**
+**Exemplo**: `GET /bookings/history?startDate=2024-01-01&endDate=2024-01-31&status=confirmed&limit=10`
+
+## 🔧 Endpoints Administrativos
+
+### Verificar Saúde do Sistema
+
+**Endpoint**: `GET /admin/health`
+
+**Autenticação**: Não necessária
+
+### Validar Schema da Base de Dados
+
+**Endpoint**: `GET /admin/schema/validate`
+
+**Autenticação**: Não necessária
+
+### Inicializar Base de Dados
+
+**Endpoint**: `POST /admin/initialize`
+
+**Autenticação**: Não necessária
+
+### Status do Sistema
+
+**Endpoint**: `GET /admin/status`
+
+**Autenticação**: Necessária
+
+## 📊 Estrutura de Respostas
+
+### Resposta de Sucesso Padrão
+
 ```json
 {
   "success": true,
-  "message": "Booking history retrieved successfully",
+  "message": "Operação realizada com sucesso",
   "data": {
-    "bookings": [
-      {
-        "id": "booking123",
-        "clientId": "client123",
-        "clientName": "João Silva",
-        "serviceId": "service123",
-        "serviceName": "Massagem Relaxante",
-        "providerId": "provider123",
-        "providerName": "Maria Santos",
-        "amount": 50.00,
-        "status": "confirmed",
-        "createdAt": "2024-01-15T10:30:00Z"
-      }
-    ],
-    "total": 1,
-    "hasMore": false,
-    "filters": {
-      "startDate": "2024-01-01T00:00:00Z",
-      "endDate": "2024-01-31T23:59:59Z",
-      "status": "confirmed"
-    },
-    "userType": "client"
+    // Dados específicos da operação
   }
 }
 ```
 
-### 5. Administração (`/admin`)
-
-#### 5.1 Verificação de Saúde da Base de Dados
-```http
-GET /admin/health
-```
-
-#### 5.2 Estado do Sistema
-```http
-GET /admin/status
-Authorization: Bearer {token}
-```
-
-## Tratamento de Erros
-
-### Estrutura de Resposta de Erro
+### Resposta de Erro Padrão
 
 ```json
 {
   "success": false,
-  "error": "VALIDATION_ERROR",
-  "message": "Email and password are required",
-  "code": "VALIDATION_ERROR",
+  "error": "Código do erro",
+  "message": "Mensagem descritiva do erro",
   "details": {
-    "field": "email",
-    "value": null
+    // Detalhes adicionais do erro (opcional)
   }
 }
 ```
 
-### Códigos de Estado HTTP
+## 🚨 Tratamento de Erros
 
-- `200`: Sucesso
-- `201`: Criado com sucesso
-- `400`: Erro de validação ou dados inválidos
-- `401`: Não autorizado (token inválido ou em falta)
-- `403`: Proibido (sem permissões)
-- `404`: Recurso não encontrado
-- `409`: Conflito (recurso já existe)
-- `500`: Erro interno do servidor
+### Códigos de Status HTTP
 
-### Códigos de Erro da API
+- **200**: Sucesso
+- **201**: Criado
+- **400**: Requisição inválida (dados incorretos)
+- **401**: Não autorizado (token inválido/ausente)
+- **403**: Proibido (permissão insuficiente)
+- **404**: Não encontrado
+- **409**: Conflito (recurso já existe)
+- **500**: Erro interno do servidor
 
-- `VALIDATION_ERROR`: Erro de validação de dados
-- `AUTHENTICATION_ERROR`: Erro de autenticação
-- `AUTHORIZATION_ERROR`: Erro de autorização
+### Tipos de Erro Comuns
+
+- `VALIDATION_ERROR`: Dados inválidos
+- `AUTHENTICATION_ERROR`: Problemas de autenticação
+- `AUTHORIZATION_ERROR`: Problemas de autorização
 - `NOT_FOUND`: Recurso não encontrado
 - `DUPLICATE_RESOURCE`: Recurso duplicado
 - `INSUFFICIENT_BALANCE`: Saldo insuficiente
 - `INVALID_OPERATION`: Operação inválida
-- `DATABASE_ERROR`: Erro da base de dados
-- `INTERNAL_ERROR`: Erro interno
 
-## Exemplos de Implementação
+## 🔒 Segurança
 
-### JavaScript/TypeScript (Fetch API)
+### Headers Necessários
 
-```javascript
-class BookingAPI {
-  constructor(baseURL, token = null) {
-    this.baseURL = baseURL;
-    this.token = token;
-  }
-
-  setToken(token) {
-    this.token = token;
-  }
-
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.token && { 'Authorization': `Bearer ${this.token}` }),
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    if (config.body && typeof config.body === 'object') {
-      config.body = JSON.stringify(config.body);
-    }
-
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Request failed');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('API Request failed:', error);
-      throw error;
-    }
-  }
-
-  // Autenticação
-  async register(userData) {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: userData,
-    });
-  }
-
-  async login(credentials) {
-    const response = await this.request('/auth/login', {
-      method: 'POST',
-      body: credentials,
-    });
-    
-    if (response.success && response.data.token) {
-      this.setToken(response.data.token);
-    }
-    
-    return response;
-  }
-
-  // Utilizadores
-  async getProfile() {
-    return this.request('/users/profile');
-  }
-
-  async getBalance() {
-    return this.request('/users/balance');
-  }
-
-  // Serviços
-  async getServices(filters = {}) {
-    const queryString = new URLSearchParams(filters).toString();
-    return this.request(`/services${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async createService(serviceData) {
-    return this.request('/services', {
-      method: 'POST',
-      body: serviceData,
-    });
-  }
-
-  async getMyServices() {
-    return this.request('/services/my');
-  }
-
-  async updateService(serviceId, updateData) {
-    return this.request(`/services/${serviceId}`, {
-      method: 'PUT',
-      body: updateData,
-    });
-  }
-
-  async deleteService(serviceId) {
-    return this.request(`/services/${serviceId}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Reservas
-  async createBooking(serviceId) {
-    return this.request('/bookings', {
-      method: 'POST',
-      body: { serviceId },
-    });
-  }
-
-  async getMyBookings() {
-    return this.request('/bookings/my');
-  }
-
-  async cancelBooking(bookingId, reason = null) {
-    return this.request(`/bookings/${bookingId}/cancel`, {
-      method: 'PUT',
-      body: reason ? { cancellationReason: reason } : {},
-    });
-  }
-
-  async getBookingHistory(filters = {}) {
-    const queryString = new URLSearchParams(filters).toString();
-    return this.request(`/bookings/history${queryString ? `?${queryString}` : ''}`);
-  }
-}
-
-// Exemplo de uso
-const api = new BookingAPI('http://localhost:5002/agendaLaServer');
-
-// Login
-try {
-  const loginResponse = await api.login({
-    email: 'joao@exemplo.com',
-    password: 'senha123'
-  });
-  
-  console.log('Login bem-sucedido:', loginResponse.data.user);
-  
-  // Obter serviços
-  const services = await api.getServices({ 
-    search: 'massage', 
-    limit: 10 
-  });
-  
-  console.log('Serviços encontrados:', services.data.services);
-  
-  // Criar reserva
-  if (services.data.services.length > 0) {
-    const booking = await api.createBooking(services.data.services[0].id);
-    console.log('Reserva criada:', booking.data);
-  }
-  
-} catch (error) {
-  console.error('Erro:', error.message);
-}
+Para todas as requisições autenticadas:
+```
+Authorization: Bearer {token}
+Content-Type: application/json
 ```
 
-### React Hook Personalizado
+### CORS
 
-```javascript
-import { useState, useEffect, useCallback } from 'react';
+A API aceita requisições dos seguintes domínios:
+- `http://localhost:8080`
+- `http://localhost:3000`
+- `http://localhost:5173`
+- `https://angolaeventos-cd238.web.app`
+- `https://angolaeventos-cd238.firebaseapp.com`
+- `https://agendala.online`
 
-export const useBookingAPI = (baseURL) => {
-  const [token, setToken] = useState(localStorage.getItem('authToken'));
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+## 📝 Validações
 
-  const api = new BookingAPI(baseURL, token);
+### Validações de Usuário
+- `fullName`: Obrigatório, string não vazia
+- `nif`: Obrigatório, string não vazia
+- `email`: Obrigatório, formato de email válido
+- `password`: Obrigatório, mínimo 6 caracteres
+- `userType`: Obrigatório, "client" ou "provider"
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('authToken', token);
-      api.setToken(token);
-    } else {
-      localStorage.removeItem('authToken');
-    }
-  }, [token]);
+### Validações de Serviço
+- `name`: Obrigatório, string não vazia
+- `description`: Obrigatório, string não vazia
+- `price`: Obrigatório, número positivo
 
-  const handleRequest = useCallback(async (requestFn) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await requestFn();
-      return result;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+### Validações de Reserva
+- `serviceId`: Obrigatório, ID válido de serviço
 
-  const login = useCallback(async (credentials) => {
-    return handleRequest(async () => {
-      const response = await api.login(credentials);
-      setToken(response.data.token);
-      setUser(response.data.user);
-      return response;
-    });
-  }, [handleRequest]);
+## 💡 Dicas para Implementação Frontend
 
-  const logout = useCallback(() => {
-    setToken(null);
-    setUser(null);
-    setError(null);
-  }, []);
+1. **Armazenamento do Token**: Use localStorage ou sessionStorage para armazenar o token JWT
+2. **Interceptação de Requisições**: Implemente um interceptor para adicionar automaticamente o token às requisições
+3. **Tratamento de Token Expirado**: Implemente lógica para renovar token ou redirecionar para login
+4. **Loading States**: Mostre indicadores de carregamento durante as requisições
+5. **Error Handling**: Implemente tratamento de erros consistente para todos os endpoints
+6. **Data Formatting**: Formate datas adequadamente para exibição (considere timezone)
+7. **Pagination**: Implemente paginação para listagens grandes
+8. **Real-time Updates**: Considere usar WebSockets ou polling para atualizações em tempo real
 
-  const register = useCallback(async (userData) => {
-    return handleRequest(async () => {
-      const response = await api.register(userData);
-      setToken(response.data.token);
-      setUser(response.data.user);
-      return response;
-    });
-  }, [handleRequest]);
+## 🧪 Testes
 
-  return {
-    api,
-    token,
-    user,
-    loading,
-    error,
-    login,
-    logout,
-    register,
-    isAuthenticated: !!token,
-  };
-};
-```
+Use a coleção do Postman incluída no repositório (`AgendaLa_API_Postman_Collection.json`) para testar os endpoints durante o desenvolvimento.
 
-## Boas Práticas
+## 📞 Suporte
 
-### 1. Gestão de Tokens
-- Armazene tokens de forma segura (localStorage para web, keychain para mobile)
-- Implemente renovação automática de tokens
-- Limpe tokens ao fazer logout
-
-### 2. Tratamento de Erros
-- Sempre verifique o campo `success` na resposta
-- Implemente retry logic para erros de rede
-- Mostre mensagens de erro amigáveis ao utilizador
-
-### 3. Performance
-- Use paginação para listas grandes
-- Implemente cache para dados que não mudam frequentemente
-- Use debouncing para pesquisas em tempo real
-
-### 4. Segurança
-- Nunca armazene senhas no frontend
-- Valide dados no frontend antes de enviar
-- Use HTTPS em produção
-
-### 5. UX/UI
-- Mostre estados de loading durante requisições
-- Implemente feedback visual para ações (sucesso/erro)
-- Use optimistic updates quando apropriado
-
-## Configuração CORS
-
-A API está configurada para aceitar requisições de origens específicas. Para desenvolvimento local, certifique-se de que a sua aplicação frontend está a correr numa porta permitida ou configure as origens permitidas no ficheiro `functions/src/config/corsConfig.ts`.
-
-## Ambiente de Desenvolvimento
-
-Para testar a API localmente:
-
-1. Inicie o emulador Firebase: `firebase emulators:start`
-2. A API estará disponível em: `http://localhost:5002/agendaLaServer`
-3. Use o endpoint `/info` para verificar se a API está a funcionar
-
-## Suporte
-
-Para questões técnicas ou problemas com a API, consulte:
-- Logs do Firebase Functions
-- Documentação do Firebase
-- Código fonte da API no diretório `functions/src/`
+Para dúvidas sobre a API, consulte a documentação técnica ou entre em contato com a equipe de desenvolvimento backend.

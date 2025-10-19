@@ -49,7 +49,7 @@ module.exports = {
     "@typescript-eslint/ban-types": "off", // Permite tipos como Function
     "space-before-function-paren": "off", // Não exige espaço antes dos parênteses de função
     "no-useless-escape": "off", // Permite escapes desnecessários
-    
+
     // Regras mantidas
     "import/no-unresolved": 0,
     "indent": "off", // Desabilita regra de indentação
