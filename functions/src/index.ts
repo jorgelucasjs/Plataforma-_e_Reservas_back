@@ -5,29 +5,27 @@ dotenv.config();
 // Inicializar Firebase Admin SDK
 import * as admin from "firebase-admin";
 
-// Inicializar Firebase Admin apenas se ainda não foi inicializado
 if (!admin.apps.length) {
   admin.initializeApp();
 }
 
 // Importações
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { onRequest } from "firebase-functions/v2/https";
-import cors from "cors";
 
 import { ALLOWED_ORIGINS, CORS_METHODS, CORS_HEADERS, CORS_MAX_AGE } from "./config/corsConfig";
 
 // Importar middleware
-import { 
-  errorHandler, 
-  notFoundHandler, 
-  timeoutHandler, 
-  securityErrorHandler 
+import {
+  errorHandler,
+  notFoundHandler,
+  timeoutHandler,
+  securityErrorHandler
 } from './middleware/errorHandler';
-import { 
-  sanitizeInput, 
-  validateContentType, 
-  validateRequestSize 
+import {
+  sanitizeInput,
+  validateContentType,
+  validateRequestSize
 } from './middleware/validation';
 
 // Importar utilitários de monitoramento
@@ -41,53 +39,69 @@ import adminRoutes from './routes/admin';
 const app = express();
 
 // ============================================
-// ORDEM CRÍTICA: CORS DEVE SER PRIMEIRO
+// CONFIGURAÇÃO CORS - NÍVEL DE CLOUD FUNCTION
 // ============================================
 
+// Middleware de CORS customizado ANTES de tudo
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const origin = req.headers.origin;
 
-const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Permitir requisições sem origem (ex: aplicações móveis, Postman)
-    if (!origin) return callback(null, true);
-    
-    const allAllowedOrigins = [...ALLOWED_ORIGINS];
-    
-    if (allAllowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'), false);
+  // Log para debug
+  console.log(`[CORS] Origin: ${origin}, Method: ${req.method}`);
+
+  // Sempre definir headers CORS básicos
+  res.setHeader('Access-Control-Allow-Methods', CORS_METHODS.join(', '));
+  res.setHeader('Access-Control-Allow-Headers', CORS_HEADERS.join(', '));
+  res.setHeader('Access-Control-Max-Age', CORS_MAX_AGE.toString());
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Type, Authorization');
+
+  // Permitir requisições sem origem (móvel, Postman, etc)
+  if (!origin) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
     }
-  },
-  credentials: true,
-  methods: CORS_METHODS,
-  allowedHeaders: CORS_HEADERS,
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-  maxAge: CORS_MAX_AGE,
-  preflightContinue: false // Importante: não passar para próximo middleware
-};
+    return next();
+  }
 
-// Aplicar CORS PRIMEIRO
-app.use(cors(corsOptions));
+  // Verificar se a origem está na whitelist
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    console.log(`[CORS] ✓ Origin permitida: ${origin}`);
+  } else {
+    // Para origens não listadas, ainda permitir mas sem credentials
+    res.setHeader('Access-Control-Allow-Origin', origin);
+
+    console.log(`[CORS] ⚠ Origin não na whitelist: ${origin}`);
+  }
+
+  // Responder a requisições OPTIONS (preflight)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
 
 // ============================================
-// MIDDLEWARE DE SEGURANÇA (após CORS)
+// MIDDLEWARE DE SEGURANÇA
 // ============================================
-app.use(timeoutHandler(30000)); // Timeout de 30 segundos
-app.use(validateRequestSize(1024 * 1024)); // Limite de tamanho de requisição de 1MB
+app.use(timeoutHandler(30000));
+app.use(validateRequestSize(1024 * 1024));
 app.use(securityErrorHandler);
 
-// Middleware de parsing do corpo da requisição
+// Middleware de parsing
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Validação de Content-Type para requisições POST/PUT
+// Validação
 app.use(validateContentType('application/json'));
-
-// Middleware de sanitização de entrada
 app.use(sanitizeInput);
 
-// Middleware de monitoramento de requisições
+// Monitoramento
 app.use(createRequestMonitoringMiddleware());
 
 // ============================================
@@ -128,7 +142,7 @@ app.get("/info", (req: Request, res: Response) => {
         },
         "POST /auth/login": {
           description: "User authentication",
-          authentication: "none", 
+          authentication: "none",
           roles: "none",
           body: "{ email, password }"
         }
@@ -225,7 +239,7 @@ app.get("/info", (req: Request, res: Response) => {
     },
     requirements: {
       "1.1": "User registration with validation",
-      "2.1": "JWT authentication system", 
+      "2.1": "JWT authentication system",
       "2.2": "Token validation and user context",
       "3.1": "Service creation and management",
       "3.2": "Service provider ownership verification",
@@ -254,11 +268,17 @@ app.get("/info", (req: Request, res: Response) => {
 // ============================================
 // HANDLERS FINAIS
 // ============================================
-// Manipulador 404 para rotas não encontradas
 app.use(notFoundHandler);
-
-// Middleware global de tratamento de erros (deve ser o último)
 app.use(errorHandler);
 
-// Exportar função Firebase
-exports.sistemaDeReservaServer = onRequest(app);
+// ============================================
+// EXPORTAR CLOUD FUNCTION COM CORS
+// ============================================
+exports.sistemaDeReservaServer = onRequest(
+  {
+    cors: ALLOWED_ORIGINS,
+    timeoutSeconds: 540,
+    invoker: 'public',
+  },
+  app
+);
