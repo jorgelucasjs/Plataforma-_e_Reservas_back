@@ -14,6 +14,8 @@ export const ALLOWED_ORIGINS = [
   'https://agendala.online',	
   
   // Adicione aqui outros domínios conforme necessário
+  'https://bulir-angola.web.app',
+  
 ];
 
 export const CORS_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];

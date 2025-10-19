@@ -40,22 +40,19 @@ import adminRoutes from './routes/admin';
 // Criar aplicação Express
 const app = express();
 
-// Middleware de segurança - aplicar cedo
-app.use(timeoutHandler(30000)); // Timeout de 30 segundos
-app.use(validateRequestSize(1024 * 1024)); // Limite de tamanho de requisição de 1MB
-app.use(securityErrorHandler);
+// ============================================
+// ORDEM CRÍTICA: CORS DEVE SER PRIMEIRO
+// ============================================
 
-// Configuração CORS
-const extraAllowedOrigins = [
-  'https://bulir-angola.web.app' // origem adicionada para permitir requests do frontend Bulir
-];
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     // Permitir requisições sem origem (ex: aplicações móveis, Postman)
     if (!origin) return callback(null, true);
     
-    if (ALLOWED_ORIGINS.indexOf(origin) !== -1 || extraAllowedOrigins.indexOf(origin) !== -1) {
+    const allAllowedOrigins = [...ALLOWED_ORIGINS];
+    
+    if (allAllowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
@@ -66,32 +63,19 @@ const corsOptions = {
   methods: CORS_METHODS,
   allowedHeaders: CORS_HEADERS,
   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-  maxAge: CORS_MAX_AGE
+  maxAge: CORS_MAX_AGE,
+  preflightContinue: false // Importante: não passar para próximo middleware
 };
 
+// Aplicar CORS PRIMEIRO
 app.use(cors(corsOptions));
 
-// Middleware adicional para garantir cabeçalhos CORS em todas as respostas
-app.use((req: Request, res: Response, next: express.NextFunction) => {
-  const origin = req.headers.origin;
-  
-  if (origin && (ALLOWED_ORIGINS.includes(origin) || extraAllowedOrigins.includes(origin))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', CORS_METHODS.join(', '));
-  res.setHeader('Access-Control-Allow-Headers', CORS_HEADERS.join(', '));
-  res.setHeader('Access-Control-Max-Age', CORS_MAX_AGE.toString());
-  
-  // Responder a requisições OPTIONS (preflight)
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  
-  next();
-});
+// ============================================
+// MIDDLEWARE DE SEGURANÇA (após CORS)
+// ============================================
+app.use(timeoutHandler(30000)); // Timeout de 30 segundos
+app.use(validateRequestSize(1024 * 1024)); // Limite de tamanho de requisição de 1MB
+app.use(securityErrorHandler);
 
 // Middleware de parsing do corpo da requisição
 app.use(express.json({ limit: '1mb' }));
@@ -103,17 +87,19 @@ app.use(validateContentType('application/json'));
 // Middleware de sanitização de entrada
 app.use(sanitizeInput);
 
-// Middleware de monitoramento de requisições aprimorado (tarefa 7.3)
+// Middleware de monitoramento de requisições
 app.use(createRequestMonitoringMiddleware());
 
-// Montar rotas com aplicação adequada de middleware
+// ============================================
+// ROTAS
+// ============================================
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/services', serviceRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/admin', adminRoutes);
 
-// Endpoint de informações da API (aprimorado para tarefa 7.2)
+// Endpoint de informações da API
 app.get("/info", (req: Request, res: Response) => {
   res.json({
     success: true,
@@ -265,13 +251,14 @@ app.get("/info", (req: Request, res: Response) => {
   });
 });
 
+// ============================================
+// HANDLERS FINAIS
+// ============================================
 // Manipulador 404 para rotas não encontradas
 app.use(notFoundHandler);
 
 // Middleware global de tratamento de erros (deve ser o último)
 app.use(errorHandler);
-
-
 
 // Exportar função Firebase
 exports.sistemaDeReservaServer = onRequest(app);
