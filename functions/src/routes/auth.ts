@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { userService } from '../services/userService';
 import { UserRegistrationRequest, UserLoginRequest } from '../models/user';
 import { ErrorResponse } from '../types/responses';
+import { AuthenticatedRequest } from '../types/auth';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
@@ -93,6 +95,61 @@ router.post('/login', async (req: Request, res: Response) => {
             success: false,
             error: 'Internal Server Error',
             message: 'An unexpected error occurred during authentication'
+        };
+        return res.status(500).json(errorResponse);
+    }
+});
+
+/**
+ * POST /auth/add-balance - Adiciona valor ao campo balance do usuário identificado por email
+ * Body: { email: string, amount: number }
+ * Rota protegida (ex.: client). Ajuste as roles conforme necessidade.
+ */
+router.post('/add-balance', authenticateToken({ roles: ['client'] }), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const { email, amount } = req.body as { email?: string; amount?: number };
+
+        // Validações básicas
+        if (!email || amount === undefined) {
+            const errorResponse: ErrorResponse = {
+                success: false,
+                error: 'Validation Error',
+                message: 'Both email and amount are required'
+            };
+            return res.status(400).json(errorResponse);
+        }
+
+        const numericAmount = Number(amount);
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            const errorResponse: ErrorResponse = {
+                success: false,
+                error: 'Validation Error',
+                message: 'Amount must be a positive number'
+            };
+            return res.status(400).json(errorResponse);
+        }
+
+        // Chamar serviço de usuário — espera-se que userService implemente addBalanceByEmail
+        // (email: string, amount: number, actorId?: string) => { success: boolean, ... }
+        const result = await userService.addBalanceByEmail(email, numericAmount, req.user?.userId);
+
+        if (!result || result.success === false) {
+            const statusCode = result?.error?.toLowerCase().includes('not found') ? 404 : 400;
+            return res.status(statusCode).json(result || {
+                success: false,
+                error: 'Operation Failed',
+                message: 'Failed to add balance'
+            });
+        }
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Add balance endpoint error:', error);
+        const errorResponse: ErrorResponse = {
+            success: false,
+            error: 'Internal Server Error',
+            message: 'An unexpected error occurred while adding balance'
         };
         return res.status(500).json(errorResponse);
     }

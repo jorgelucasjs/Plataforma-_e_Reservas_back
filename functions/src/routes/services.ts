@@ -267,4 +267,58 @@ router.delete('/:id', authenticateToken({ roles: ['provider'] }), async (req: Au
   }
 });
 
+/**
+ * GET /services/provider/:providerId - List services by providerId (public)
+ * Novo endpoint para obter serviços de um provider específico pelo seu ID
+ */
+router.get('/provider/:providerId', async (req: Request, res: Response) => {
+  try {
+    const providerId = req.params.providerId;
+
+    // Validate providerId
+    if (!providerId) {
+      const errorResponse = {
+        success: false,
+        error: 'Validation Error',
+        message: 'Provider ID is required'
+      };
+      return res.status(400).json(errorResponse);
+    }
+
+    // Fetch services
+    const services = await serviceManager.getServicesByProvider(providerId);
+
+    const response: ServicesListResponse = {
+      success: true,
+      message: 'Provider services retrieved successfully',
+      data: {
+        services,
+        total: services.length
+      }
+    };
+
+    return res.status(200).json(response);
+
+  } catch (error) {
+    console.error('Get services by provider endpoint error:', error);
+
+    if (error instanceof APIError) {
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: error.code,
+        message: error.message,
+        details: error.details
+      };
+      return res.status(error.statusCode).json(errorResponse);
+    }
+
+    const errorResponse: ErrorResponse = {
+      success: false,
+      error: 'Internal Server Error',
+      message: 'An unexpected error occurred while retrieving provider services'
+    };
+    return res.status(500).json(errorResponse);
+  }
+});
+
 export { router as serviceRoutes };

@@ -416,6 +416,55 @@ export class UserServiceImpl implements UserService {
     }
 
     /**
+     * Adiciona valor ao balance do usuário identificado por email.
+     * Retorna { success, message?, error?, user? }
+     */
+    async addBalanceByEmail(email: string, amount: number, actorId?: string): Promise<{ success: boolean; message?: string; error?: string; user?: any }> {
+        try {
+            // Procurar usuário pelo email
+            const querySnapshot = await this.usersCollection.where('email', '==', email).limit(1).get();
+
+            if (querySnapshot.empty) {
+                return { success: false, error: 'User not found' };
+            }
+
+            const userDoc = querySnapshot.docs[0];
+            const userRef = this.usersCollection.doc(userDoc.id);
+            const data = userDoc.data() as any;
+
+            const currentBalance = typeof data.balance === 'number' ? data.balance : 0;
+            const newBalance = currentBalance + amount;
+
+            // Atualizar saldo e updatedAt
+            await userRef.update({
+                balance: newBalance,
+                updatedAt: new Date().getTime()
+            });
+
+            // Construir objeto de usuário atualizado para retorno
+            const updatedUser = {
+                id: userDoc.id,
+                fullName: data.fullName,
+                email: data.email,
+                nif: data.nif,
+                userType: data.userType,
+                isActive: data.isActive,
+                balance: newBalance,
+                createdAt: typeof data.createdAt === 'number' ? new Date(data.createdAt) : (data.createdAt || new Date()),
+                updatedAt: new Date()
+            };
+
+            // Opcional: registrar auditoria (actorId) - se houver coleção de logs, você pode inserir aqui
+
+            return { success: true, message: 'Balance updated', user: updatedUser };
+
+        } catch (err) {
+            console.error('Error in addBalanceByEmail:', err);
+            return { success: false, error: 'Failed to update balance' };
+        }
+    }
+
+    /**
      * Convert timestamp to Date object (handles both Firestore Timestamp and number formats)
      */
     private convertToDate(timestamp: any): Date {
